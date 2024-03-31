@@ -24,6 +24,18 @@ export default function ImageGenerator() {
     const [openArray, setOpenArray] = useState([false, false, false, false]);
     const [imageSize, setImageSize] = useState([1024, 1024]);
 
+    const saveImage = async () => {
+
+
+        const data = await axios.post("http://localhost:8080/pin", {
+            m_id: 1,
+            image_path: url,
+            tag : searchValue,
+        });
+
+        console.log(data);
+    }
+
     function getImages() {
         alert("click");
 
@@ -238,6 +250,7 @@ export default function ImageGenerator() {
                                 <Box width={600}>
                                     {/*{loading ? <h1>로딩중</h1> : loading === false ? <h1>로딩 완료</h1> : null}*/}
                                     <Button fullWidth={true} text={"Create Image"} onClick={getImages} size={"lg"}/>
+                                    <Button fullWidth={true} text={"Save"} onClick={saveImage} size={"lg"}/>
                                 </Box>
                             </Flex>
                         </Box>

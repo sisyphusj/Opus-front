@@ -1,14 +1,13 @@
-import {RecoilRoot, useRecoilValue} from "recoil";
+import {useRecoilValue} from "recoil";
 import {isDarkMode} from "./atom";
 import Home from "./page/Home";
 import ImageGenerator from "./page/ImageGenerator";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
 import Header from "./component/Header";
 import {Box, ColorSchemeProvider} from "gestalt";
-import {useEffect, useRef} from "react";
-
 
 function App() {
+
     const mode = useRecoilValue(isDarkMode);
 
     return (
@@ -18,6 +17,7 @@ function App() {
                     <Header/>
                     <Routes>
                         <Route path="/" element={<Home/>}/>
+                        <Route path="/image-generator" element={<ImageGenerator/>}/>
                         <Route path="/image-generator" element={<ImageGenerator/>}/>
                     </Routes>
                 </Box>

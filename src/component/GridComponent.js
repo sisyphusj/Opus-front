@@ -22,11 +22,11 @@ export default function GridComponent({data}) {
                      onMouseOut={() => handleMouseOut()}>
                      <Main $hover = {hover} onClick={() => alert("click")}>
                         <Image
-                            alt={data.name}
-                            color={data.color}
-                            naturalHeight={data.height}
-                            naturalWidth={data.width}
-                            src={data.src}
+                            // alt={data.name}
+                            // color={data.color}
+                            naturalHeight={1024}
+                            naturalWidth={1024}
+                            src={data.image_path}
                         >
                             <Box height="100%"  onMouseOver={() => handleMouseOver()}
                                  onMouseOut={() => handleMouseOut()}>

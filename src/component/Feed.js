@@ -1,24 +1,39 @@
-import {useEffect, useId, useRef, useState} from 'react';
-import {Box, Flex, Image, Label, Masonry, Text,} from 'gestalt';
-import {pins} from './pins';
+import {useEffect, useId, useState} from 'react';
+import {Box, Flex, Masonry,} from 'gestalt';
+import axios from "axios";
 import GridComponent from './GridComponent';
 
-function getPins(n) {
-    const pinList = [...new Array(n)].map(() => [...pins]).flat();
-    return Promise.resolve(pinList);
-}
+// const getPins = (n) => {
+//     const pinList = [...new Array(n)].map(() => [...pins]).flat();
+//     return Promise.resolve(pinList);
+// }
 
 export default function Feed() {
     const [pins, setPins] = useState([]);
     const [width, setWidth] = useState(window.innerWidth);
     const [isLoading, setIsLoading] = useState(false);
+    const [offset, setOffset] = useState(0);
     const labelId = useId();
 
-    function orderPins() {
-        const newPins = [...pins, ...getPins(10)];
-        return setPins(newPins);
-    }
+    const getPins1 = async (n) => {
 
+        console.log(Number(n));
+
+        try {
+            const response = await axios.post("http://localhost:8080/pin/list", {
+                m_id: 1,
+                amount: 5,
+                offset: offset
+            })
+
+            console.log(response.data);
+
+            return Promise.resolve(response.data);
+        } catch (error) {
+            console.error(error);
+        }
+
+    }
 
     useEffect(() => {
         const handleResize = () => {
@@ -30,6 +45,10 @@ export default function Feed() {
         return () => window.removeEventListener('resize', handleResize);
 
     }, [])
+
+    useEffect(() => {
+        getPins1(10);
+    }, []);
 
     return (
         <Box padding={2}>
@@ -55,8 +74,9 @@ export default function Feed() {
                         scrollContainer={() => window}
                         loadItems={(n) => {
                             // console.log(n);
-                            if(n.from === 100) return Promise.resolve(0);
-                            return getPins(n).then((newPins) => {
+                            if (n.from === 100) return Promise.resolve(0);
+                            return getPins1(n).then((newPins) => {
+                                console.log(newPins);
                                 setPins([...pins, ...newPins]);
                             });
                         }}

@@ -12,6 +12,7 @@
 /build
 
 .env
+/public/images
 
 # misc
 .DS_Store

@@ -18,7 +18,6 @@ function App() {
                     <Routes>
                         <Route path="/" element={<Home/>}/>
                         <Route path="/image-generator" element={<ImageGenerator/>}/>
-                        <Route path="/image-generator" element={<ImageGenerator/>}/>
                     </Routes>
                 </Box>
             </ColorSchemeProvider>

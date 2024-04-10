@@ -1,11 +1,11 @@
-import {useEffect, useRef, useState} from 'react';
-import {Box, Flex, Icon, IconButton, SearchField, Button, ButtonLink} from 'gestalt';
-import styled from "styled-components";
+import {useRef, useState} from 'react';
+import {Box, Flex, IconButton, SearchField, Button} from 'gestalt';
 import {ReactComponent as LightLogo} from "../assets/lightlogo.svg";
 import {ReactComponent as DarkLogo} from "../assets/darklogo.svg";
 import {NavLink, useNavigate} from "react-router-dom";
 import {isDarkMode} from "../atom";
 import {useRecoilState} from "recoil";
+import LoginModal from "./LoginModal";
 
 export default function Header() {
     const navigate = useNavigate();
@@ -66,6 +66,7 @@ export default function Header() {
                 {/*    icon="speech-ellipsis"*/}
                 {/*    size="md"*/}
                 {/*/>*/}
+                <LoginModal />
                 <IconButton
                     accessibilityLabel="Dark Mode"
                     icon={turnDarkMode ? "sun" : "moon"}

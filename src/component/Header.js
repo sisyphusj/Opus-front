@@ -6,6 +6,7 @@ import {NavLink, useNavigate} from "react-router-dom";
 import {isDarkMode} from "../atom";
 import {useRecoilState} from "recoil";
 import LoginModal from "./LoginModal";
+import api from "../api";
 
 export default function Header() {
     const navigate = useNavigate();
@@ -31,6 +32,16 @@ export default function Header() {
             setTurnDarkMode(false);
         } else {
             setTurnDarkMode(true);
+        }
+    }
+
+    const test = () => {
+        try{
+            const resp = api.get('/member/1');
+            console.log(resp);
+
+        } catch (e) {
+            console.log(e);
         }
     }
 
@@ -72,7 +83,7 @@ export default function Header() {
                     icon={turnDarkMode ? "sun" : "moon"}
                     size="lg"
                     onClick={() => handleDarkMode()} />
-                <IconButton accessibilityLabel="Profile" icon="person" size="lg"/>
+                <IconButton accessibilityLabel="Profile" icon="person" size="lg" onClick={() => test()}/>
             </Flex>
         </Box>
     );

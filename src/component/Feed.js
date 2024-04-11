@@ -19,7 +19,7 @@ export default function Feed() {
                 amount: 4,
                 offset: offset
             })
-            console.log(response.data);
+            // console.log(response.data);
             setOffset(offset + 4);
 
             return Promise.resolve(response.data);
@@ -34,7 +34,7 @@ export default function Feed() {
             const response = axios.get("http://localhost:8080/pin/total");
             response.then((res) => {
                 setTotal(res.data);
-                console.log(total);
+                // console.log(total);
             })
 
         } catch (error) {
@@ -78,7 +78,7 @@ export default function Feed() {
                         loadItems={(n) => {
                             if (n.from === total) return Promise.resolve(0);
                             return getPins(n).then((newPins) => {
-                                console.log(newPins);
+                                // console.log(newPins);
                                 setPins([...pins, ...newPins]);
                             });
                         }}

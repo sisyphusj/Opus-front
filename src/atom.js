@@ -1,4 +1,5 @@
 import { atom } from "recoil";
+import {recoilPersist} from "recoil-persist";
 
 export const isDarkMode = atom({
     key: "isDarkMode",
@@ -9,3 +10,19 @@ export const signUpOpenState = atom({
     key: "signUpOpenState",
     default: false,
 });
+
+const {persistAtom}  = recoilPersist({
+    key: 'recoil-persist',
+    storage: sessionStorage,
+});
+
+export const isLoginState = atom({
+    key: "isLoginState",
+    default: false,
+    effects_UNSTABLE: [persistAtom],
+});
+
+
+
+
+

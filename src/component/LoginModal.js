@@ -1,19 +1,20 @@
 // LoginModal.js
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import styled from 'styled-components';
-import axios from 'axios';
+import api from '../api';
 import {CustomLogo, CustomTextLogo, CustomInput, LoginButton} from './CommonModal';
 import CustomModal from './CommonModal';
 import {Button} from 'gestalt';
 import SignupModal from "./SignupModal";
 import {useRecoilState} from "recoil";
-import {signUpOpenState} from "../atom";
+import {signUpOpenState, isLoginState} from "../atom";
 
 const LoginModal = () => {
     const [id, setId] = useState('');
     const [password, setPassword] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const [signupOpen, setSignupOpen] = useRecoilState(signUpOpenState);
+    const [isLogin, setIsLogin] = useRecoilState(isLoginState);
 
     const handleModal = (bool) => {
         setIsOpen(bool);
@@ -26,25 +27,60 @@ const LoginModal = () => {
 
     const login = () => {
         try {
-            const response = axios.post('http://localhost:8080/member/login', {
+            const response = api.post('/member/login', {
                 id: id,
                 pw: password,
             });
+
+            response.then((res) => {
+                if(res.data === "로그인 성공") {
+                    setIsLogin(true);
+                }
+            });
+
             console.log(response);
+
             handleModal(false);
         } catch (e) {
             console.log(e);
         }
     };
 
+    const logout = () => {
+        try {
+            const response = api.get('/member/logout', {
+                id: id,
+                pw: password,
+            });
+
+            response.then((res) => {
+                if(res.data === "로그아웃 성공") {
+                    setIsLogin(false);
+                }
+            });
+
+            console.log(response);
+
+            handleModal(false);
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
     const handleSignup = () => {
         setIsOpen(false);
         setSignupOpen(true);
     };
 
+    useEffect(() => {
+        console.log(isLogin);
+    }, [isLogin]);
+
     return (
         <div>
-            <Button text={'로그인'} color={'gray'} size={'lg'} onClick={() => handleModal(true)}></Button>
+            {!isLogin ? <Button text={'로그인'} color={'gray'} size={'lg'} onClick={() => handleModal(true)} />
+                : <Button text={'로그아웃'} color={'gray'} size={'lg'} onClick={() => logout()} />}
+            {/*<Button text={'로그인'} color={'gray'} size={'lg'} onClick={() => handleModal(true)}></Button>*/}
             <CustomModal isOpen={isOpen} handleModal={handleModal}>
                 <CustomLogo />
                 <CustomTextLogo/>

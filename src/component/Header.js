@@ -3,8 +3,8 @@ import {Box, Flex, IconButton, SearchField, Button} from 'gestalt';
 import {ReactComponent as LightLogo} from "../assets/lightlogo.svg";
 import {ReactComponent as DarkLogo} from "../assets/darklogo.svg";
 import {NavLink, useNavigate} from "react-router-dom";
-import {isDarkMode} from "../atom";
-import {useRecoilState} from "recoil";
+import {isDarkMode, isLoginState} from "../atom";
+import {useRecoilState, useRecoilValue} from "recoil";
 import LoginModal from "./LoginModal";
 import api from "../api";
 
@@ -13,6 +13,7 @@ export default function Header() {
     const [searchValue, setSearchValue] = useState('');
     const SearchFieldRef = useRef(null);
     const [turnDarkMode, setTurnDarkMode] = useRecoilState(isDarkMode);
+    const isLogin = useRecoilValue(isLoginState);
 
     function handleEditButton() {
         navigate("/image-generator");
@@ -35,13 +36,11 @@ export default function Header() {
         }
     }
 
-    const test = () => {
-        try{
-            const resp = api.get('/member/1');
-            console.log(resp);
-
-        } catch (e) {
-            console.log(e);
+    const handleInfoButton = () => {
+        if(isLogin)
+        navigate("/settings/profile");
+        else {
+            console.log("로그인이 필요합니다.");
         }
     }
 
@@ -83,7 +82,7 @@ export default function Header() {
                     icon={turnDarkMode ? "sun" : "moon"}
                     size="lg"
                     onClick={() => handleDarkMode()} />
-                <IconButton accessibilityLabel="Profile" icon="person" size="lg" onClick={() => test()}/>
+                <IconButton accessibilityLabel="Profile" icon="person" size="lg" onClick={() => handleInfoButton()}/>
             </Flex>
         </Box>
     );

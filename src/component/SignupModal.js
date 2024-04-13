@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import axios from 'axios';
 import CustomModal from './CommonModal';
-import {CustomInput, LoginButton } from './CommonModal';
+import {CustomInput, CustomButton } from './CommonModal';
 import {ReactComponent as LightLogo} from "../assets/lightlogo.svg";
 import {useRecoilState} from "recoil";
 import {signUpOpenState} from "../atom";
@@ -27,13 +27,17 @@ const SignupModal = () => {
 
     const getSingUp = async () => {
         try {
-            const response = await axios.post('http://localhost:8080/member', {
+            const response = await axios.post('http://localhost:8080/member/signup', {
                 id: id,
                 pw: password,
                 nickname: nickname,
                 email: email,
             });
             console.log(response);
+
+            if(response.status === 200) {
+                handleModal(false);
+            }
         } catch (e) {
             console.error(e);
         }
@@ -62,7 +66,7 @@ const SignupModal = () => {
                 InputProps={{
                     sx: {
                         borderRadius: '1.5rem',
-                        marginBottom: '15px',
+                        marginBottom: '20px',
                         width: '250px',
                     },
                 }}
@@ -91,7 +95,7 @@ const SignupModal = () => {
                 InputProps={{
                     sx: {
                         borderRadius: '1.5rem',
-                        marginBottom: '15px',
+                        marginBottom: '20px',
                         width: '250px',
                     },
                 }}
@@ -110,7 +114,7 @@ const SignupModal = () => {
                     },
                 }}
             />
-            <LoginButton onClick={() => getSingUp()}>Sign Up</LoginButton>
+            <CustomButton onClick={() => getSingUp()}>Sign Up</CustomButton>
         </CustomModal>
     );
 };

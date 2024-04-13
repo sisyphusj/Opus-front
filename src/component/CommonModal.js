@@ -34,7 +34,7 @@ const CustomModal = ({ isOpen, handleModal, children }) => {
     );
 };
 
-const Background = styled.div`
+export const Background = styled.div`
     position: fixed;
     top: 0;
     left: 0;
@@ -47,7 +47,7 @@ const Background = styled.div`
     z-index: 999;
 `;
 
-const Main = styled.div`
+export const Main = styled.div`
     width: 450px;
     height: 650px;
     background: white;
@@ -101,7 +101,7 @@ export const CustomInput = styled(TextField)({
     },
 });
 
-export const LoginButton = styled.button`
+export const CustomButton = styled.button`
     width: 250px;
     height: 50px;
     padding: 8px 16px;

@@ -2,7 +2,7 @@
 import React, {useEffect, useState} from 'react';
 import styled from 'styled-components';
 import api from '../api';
-import {CustomLogo, CustomTextLogo, CustomInput, LoginButton} from './CommonModal';
+import {CustomLogo, CustomTextLogo, CustomInput, CustomButton} from './CommonModal';
 import CustomModal from './CommonModal';
 import {Button} from 'gestalt';
 import SignupModal from "./SignupModal";
@@ -114,7 +114,7 @@ const LoginModal = () => {
                         },
                     }}
                 />
-                <LoginButton onClick={() => login()}> 로그인 </LoginButton>
+                <CustomButton onClick={() => login()}> 로그인 </CustomButton>
                 <p style={{marginTop: '20px'}}> 계정이 없으신가요?
                     <StyledLink onClick={() => handleSignup()} style={{marginLeft: '5px'}}>회원가입</StyledLink>
                 </p>

@@ -1,7 +1,7 @@
 import {useEffect, useId, useState} from 'react';
 import {Box, Flex, Masonry,} from 'gestalt';
 import axios from "axios";
-import GridComponent from './GridComponent';
+import GridComponent from '../component/GridComponent';
 
 export default function Feed() {
     const [pins, setPins] = useState([]);
@@ -54,7 +54,7 @@ export default function Feed() {
     }, [])
 
     return (
-        <Box padding={2}>
+        <Box padding={2} minHeight={"calc(100vh - 122px)"}>
             <Flex direction="column" gap={4}>
                 <div
                     // tabIndex={0}

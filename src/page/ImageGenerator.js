@@ -3,6 +3,7 @@ import {Box, Button, ButtonGroup, ComboBox, Flex, Heading, Image, NumberField, S
 import {Input, Slider} from "@mui/material";
 import axios from "axios";
 import styled from "styled-components";
+import api from "../api";
 
 export default function ImageGenerator() {
     const apiKey = process.env.REACT_APP_KAKAO_REST_API_KEY;
@@ -26,9 +27,7 @@ export default function ImageGenerator() {
 
     const saveImage = async () => {
 
-
-        const data = await axios.post("http://localhost:8080/pin", {
-            m_id: 1,
+        const data = await api.post("http://localhost:8080/pin", {
             image_path: url,
             tag : searchValue,
         });

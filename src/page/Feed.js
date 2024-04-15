@@ -1,21 +1,20 @@
-import {useEffect, useId, useState} from 'react';
+import {useEffect, useId, useRef, useState} from 'react';
 import {Box, Flex, Masonry,} from 'gestalt';
-import axios from "axios";
 import GridComponent from '../component/GridComponent';
+import api from "../api";
 
 export default function Feed() {
     const [pins, setPins] = useState([]);
-    const [width, setWidth] = useState(window.innerWidth);
     const [isLoading, setIsLoading] = useState(false);
     const [offset, setOffset] = useState(0);
     const [total, setTotal] = useState(null);
     const labelId = useId();
+    const scrollContainerRef = useRef();
 
     const getPins = async (n) => {
         try {
             await getTotalCount();
-            const response = await axios.post("http://localhost:8080/pin/list", {
-                m_id: 1,
+            const response = await api.post("http://localhost:8080/pin/list", {
                 amount: 4,
                 offset: offset
             })
@@ -31,7 +30,7 @@ export default function Feed() {
 
     const getTotalCount = () => {
         try {
-            const response = axios.get("http://localhost:8080/pin/total");
+            const response = api.get("http://localhost:8080/pin/total");
             response.then((res) => {
                 setTotal(res.data);
                 // console.log(total);
@@ -43,48 +42,32 @@ export default function Feed() {
     };
 
     useEffect(() => {
-        const handleResize = () => {
-            const width = window.innerWidth;
-            setWidth(width);
-        };
-
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-
-    }, [])
+        getPins({from: 0}).then((newPins) => {
+            setPins(newPins);
+        });
+    }, []);
 
     return (
-        <Box padding={2} minHeight={"calc(100vh - 122px)"}>
-            <Flex direction="column" gap={4}>
-                <div
-                    // tabIndex={0}
-                    // ref={(el) => {
-                    //     scrollContainerRef.current = el;
-                    // }}
-                    style={{
-                        height: '100%',
-                        margin: '0 auto',
-                        width: `${width}px`,
-                    }}
-                >
-                    <Masonry
-                        columnWidth={252}
-                        gutterWidth={20}
-                        items={pins}
-                        layout="basicCentered"
-                        minCols={1}
-                        renderItem={({data}) => <GridComponent data={data}/>}
-                        scrollContainer={() => window}
-                        loadItems={(n) => {
-                            if (n.from === total) return Promise.resolve(0);
-                            return getPins(n).then((newPins) => {
-                                // console.log(newPins);
-                                setPins([...pins, ...newPins]);
-                            });
-                        }}
-                    />
-                </div>
-            </Flex>
+        <Box marginTop={10} minHeight={"calc(100vh - 162px)"}
+        ref={(e) => {scrollContainerRef.current = e;}}>
+            {scrollContainerRef.current && (
+            <Masonry
+                columnWidth={252}
+                gutterWidth={20}
+                items={pins}
+                layout="flexible"
+                minCols={1}
+                renderItem={({data}) => <GridComponent data={data}/>}
+                scrollContainer={() => scrollContainerRef.current}
+                loadItems={(n) => {
+                    if (n.from === total) return Promise.resolve(0);
+                    return getPins(n).then((newPins) => {
+                        // console.log(newPins);
+                        setPins([...pins, ...newPins]);
+                    });
+                }}
+            />
+            )}
         </Box>
     );
 }

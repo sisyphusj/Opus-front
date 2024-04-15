@@ -17,6 +17,7 @@ export default function MyProfile() {
     const emailFieldRef = useRef(null);
 
     const [id, setId] = useState('');
+    const [oldPassword, setOldPassword] = useState('');
     const [password, setPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [nickname, setNickname] = useState('');
@@ -27,10 +28,10 @@ export default function MyProfile() {
             const response = api.get('/member/profile');
 
             response.then((res) => {
-                console.log(res.data);
                 setId(res.data.id);
                 setNickname(res.data.nickname);
                 setEmail(res.data.email);
+                setOldPassword(res.data.pw)
             });
         } catch (e) {
             console.log(e);
@@ -41,7 +42,7 @@ export default function MyProfile() {
         try {
             const response = api.put('/member', {
                 id: id,
-                pw: password,
+                pw: changePw? newPassword : oldPassword,
                 nickname: nickname,
                 email: email,
             });
@@ -67,8 +68,9 @@ export default function MyProfile() {
 
     const handelChangeButton = (bool) => {
         setChangePw(bool);
-        if (!bool) {
+        if (bool === false) {
             setNewPassword('');
+            setPassword('');
         }
     }
 
@@ -77,7 +79,7 @@ export default function MyProfile() {
     }, []);
 
     return (
-        <Box>
+        <Box minHeight={"calc(100vh - 154px)"}>
             <Box marginBottom={6}>
                 <Heading> 계정 관리 </Heading>
             </Box>
@@ -152,8 +154,7 @@ export default function MyProfile() {
 
             {isSave && <Background>
                 <CheckSaveBox>
-
-                    <Heading size={"400"}>변경사항을 저장하시겠습니까?</Heading>
+                    <Heading color={"dark"} size={"400"}>변경사항을 저장하시겠습니까?</Heading>
                     <Flex>
                         <Box marginTop={6}>
                             <ChangeButton onClick={() => submitProfile()}> 네</ChangeButton>
@@ -162,7 +163,6 @@ export default function MyProfile() {
                             }}> 아니요</ChangeButton>
                         </Box>
                     </Flex>
-
                 </CheckSaveBox>
             </Background>}
 

@@ -8,6 +8,7 @@ import {Button} from 'gestalt';
 import SignupModal from "./SignupModal";
 import {useRecoilState} from "recoil";
 import {signUpOpenState, isLoginState} from "../atom";
+import {useNavigate} from "react-router-dom";
 
 const LoginModal = () => {
     const [id, setId] = useState('');
@@ -15,6 +16,7 @@ const LoginModal = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [signupOpen, setSignupOpen] = useRecoilState(signUpOpenState);
     const [isLogin, setIsLogin] = useRecoilState(isLoginState);
+    const navigate = useNavigate();
 
     const handleModal = (bool) => {
         setIsOpen(bool);
@@ -60,8 +62,8 @@ const LoginModal = () => {
             });
 
             console.log(response);
-
             handleModal(false);
+            navigate('/');
         } catch (e) {
             console.log(e);
         }

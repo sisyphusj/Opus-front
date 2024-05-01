@@ -8,6 +8,7 @@ import Header from "./component/Header";
 import {Box, ColorSchemeProvider} from "gestalt";
 import MyProfile from "./page/info/MyProfile";
 import MyLibrary from "./page/info/MyLibrary";
+import PinModal from "./component/PinModal";
 
 function App() {
 
@@ -16,15 +17,16 @@ function App() {
     return (
         <BrowserRouter>
             <ColorSchemeProvider colorScheme={mode ? "dark" : "light"} fullDimensions>
-                <Box fit color="default" overflow={"hidden"} minWidth={575}>
+                <Box fit color="default" minWidth={575}>
                     <Header/>
                     <Routes>
                         <Route path="/" element={<Home/>}/>
                         <Route path="/image-generator" element={<ImageGenerator/>}/>
-                        <Route path="/settings" element={<Setting />}>
-                            <Route path="profile" element={<MyProfile />}/>
-                            <Route path="library" element={<MyLibrary />}/>
+                        <Route path="/settings" element={<Setting/>}>
+                            <Route path="profile" element={<MyProfile/>}/>
+                            <Route path="library" element={<MyLibrary/>}/>
                         </Route>
+                        <Route path="/pin" element={<PinModal/>}/>
                     </Routes>
                 </Box>
             </ColorSchemeProvider>

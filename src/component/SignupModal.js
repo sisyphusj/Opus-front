@@ -30,7 +30,7 @@ const SignupModal = () => {
             const response = await axios.post('http://localhost:8080/member/signup', {
                 id: id,
                 pw: password,
-                nickname: nickname,
+                nick: nickname,
                 email: email,
             });
             console.log(response);

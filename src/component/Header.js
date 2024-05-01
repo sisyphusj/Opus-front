@@ -4,7 +4,7 @@ import {ReactComponent as LightLogo} from "../assets/lightlogo.svg";
 import {ReactComponent as DarkLogo} from "../assets/darklogo.svg";
 import {NavLink, useNavigate} from "react-router-dom";
 import {isDarkMode, isLoginState} from "../atom";
-import {useRecoilState, useRecoilValue} from "recoil";
+import {useRecoilState} from "recoil";
 import LoginModal from "./LoginModal";
 
 export default function Header() {
@@ -12,8 +12,8 @@ export default function Header() {
     const [searchValue, setSearchValue] = useState('');
     const SearchFieldRef = useRef(null);
     const [turnDarkMode, setTurnDarkMode] = useRecoilState(isDarkMode);
-    const isLogin = useRecoilValue(isLoginState);
     const customZIndex = new FixedZIndex(999);
+    const [isLogin, setIsLogin] = useRecoilState(isLoginState);
 
     function handleEditButton() {
         navigate("/image-generator");
@@ -76,11 +76,6 @@ export default function Header() {
                             autoComplete={"off"}
                         />
                     </Flex.Item>
-                    {/*<IconButton*/}
-                    {/*    accessibilityLabel="Notifications"*/}
-                    {/*    icon="speech-ellipsis"*/}
-                    {/*    size="md"*/}
-                    {/*/>*/}
                     <LoginModal/>
                     <IconButton
                         accessibilityLabel="Dark Mode"

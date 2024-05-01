@@ -35,7 +35,7 @@ const LoginModal = () => {
             });
 
             response.then((res) => {
-                if(res.data === "로그인 성공") {
+                if(res.status === 200) {
                     setIsLogin(true);
                 }
             });
@@ -55,14 +55,18 @@ const LoginModal = () => {
                 pw: password,
             });
 
+            console.log(response);
+
             response.then((res) => {
-                if(res.data === "로그아웃 성공") {
+                if(res.status === 200) {
                     setIsLogin(false);
                 }
             });
 
             console.log(response);
             handleModal(false);
+            // 지워야 함
+            setIsLogin(false);
             navigate('/');
         } catch (e) {
             console.log(e);
@@ -75,8 +79,7 @@ const LoginModal = () => {
     };
 
     useEffect(() => {
-        console.log(isLogin);
-    }, [isLogin]);
+    }, []);
 
     return (
         <div>

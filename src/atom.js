@@ -11,6 +11,11 @@ export const signUpOpenState = atom({
     default: false,
 });
 
+export const PinModalOpenState = atom({
+    key: "PinModalOpenState",
+    default: false,
+});
+
 const {persistAtom}  = recoilPersist({
     key: 'recoil-persist',
     storage: sessionStorage,

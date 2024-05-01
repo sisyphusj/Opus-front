@@ -1,35 +1,40 @@
 import {Box, Button, Flex, Image, Mask, Text} from "gestalt";
 import {useEffect, useState} from "react";
 import styled from "styled-components";
+import PinModal from "./PinModal";
+import {useNavigate} from "react-router-dom";
 
 
 export default function GridComponent({data}) {
-
     const [hover, setHover] = useState(false);
+    const [clicked, setClicked] = useState(false);
+    const navigate = useNavigate();
 
-    function handleMouseOver() {
-        setHover(true);
+    const  handleHover = (bool) => {
+        setHover(bool)
     }
 
-    function handleMouseOut() {
-        setHover(false);
+    const handleClicked = (bool) => {
+        setClicked(bool)
+        alert("저장되었습니다.");
+        navigate("/pin");
     }
 
     return (
         <Flex direction="column">
             <Mask rounding={4}>
-                <Box tyle={{filter: "none"}} height="100%" onMouseOver={() => handleMouseOver()}
-                     onMouseOut={() => handleMouseOut()}>
-                     <Main $hover = {hover} onClick={() => alert("click")}>
+                <Box tyle={{filter: "none"}} height="100%" onMouseOver={() => handleHover(true)}
+                     onMouseOut={() => handleHover(false)}>
+                     <Main $hover = {hover} onClick={() => handleClicked(true)}>
                         <Image
                             // alt={data.name}
                             // color={data.color}
                             naturalHeight={1024}
                             naturalWidth={1024}
-                            src={data.image_path}
+                            src={data.imagePath}
                         >
-                            <Box height="100%"  onMouseOver={() => handleMouseOver()}
-                                 onMouseOut={() => handleMouseOut()}>
+                            <Box height="100%"  onMouseOver={() => handleHover(true)}
+                                 onMouseOut={() => handleHover(false)}>
                             </Box>
                         </Image>
                     </Main>

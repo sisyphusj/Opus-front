@@ -7,7 +7,7 @@ import api from "../api";
 
 export default function ImageGenerator() {
     const apiKey = process.env.REACT_APP_KAKAO_REST_API_KEY;
-    const [loading, setLoading] = useState(undefined);
+    const [loading, setLoading] = useState(true);
     const [url, setUrl] = useState("");
     const [searchValue, setSearchValue] = useState('');
     const [searchNegativeValue, setSearchNegativeValue] = useState('');
@@ -28,8 +28,8 @@ export default function ImageGenerator() {
     const saveImage = async () => {
 
         const data = await api.post("http://localhost:8080/pin", {
-            image_path: url,
-            tag : searchValue,
+            imagePath: url,
+            tag: searchValue,
         });
 
         console.log(data);
@@ -68,6 +68,7 @@ export default function ImageGenerator() {
                 setLoading(false);
                 console.log(res.data.images[0].image);
                 setUrl(res.data.images[0].image);
+                setLoading(false);
                 return res.data;
             });
         } catch (e) {
@@ -116,6 +117,8 @@ export default function ImageGenerator() {
             setMainDirection(window.innerWidth > imageSize[0] + 1200 ? 'row' : 'column');
         }
 
+        updateDirection();
+
         window.addEventListener('resize', updateDirection);
 
         // 컴포넌트 언마운트 시 이벤트 리스너 제거
@@ -124,8 +127,11 @@ export default function ImageGenerator() {
 
 
     useEffect(() => {
+
+        setLoading(true);
+
         if (mainContainerRef.current) {
-            mainContainerRef.current.style.minHeight = "calc(100vh - 122px)";
+            mainContainerRef.current.style.minHeight = "calc(100vh - 162px)";
         }
 
         if (textFieldRef.current) {
@@ -138,10 +144,10 @@ export default function ImageGenerator() {
     useEffect(() => {
         // console.log(imageSize)
 
-    }, [ imageSize]);
+    }, [imageSize]);
 
     return (
-        <Flex direction={mainDirection}>
+        <Flex direction={mainDirection} justifyContent={"center"}>
             <Box fit marginStart={8} marginEnd={8} padding={5} ref={mainContainerRef}>
                 <Flex maxWidth={1500} minWidth={"100%"} direction="column" gap={5} flex={"grow"}>
                     <Box maxWidth={1070} margin={4}>
@@ -259,9 +265,9 @@ export default function ImageGenerator() {
                 </Flex>
             </Box>
 
-            <Box width={imageSize[0]} height={imageSize[1]} margin={10}>
+            {!loading && <Box margin={10} height={1024}>
                 <Image alt={"picture"} naturalHeight={1024} naturalWidth={1024} fit={"cover"} src={url}/>
-            </Box>
+            </Box>}
 
         </Flex>
     );

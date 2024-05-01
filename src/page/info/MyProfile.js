@@ -29,7 +29,7 @@ export default function MyProfile() {
 
             response.then((res) => {
                 setId(res.data.id);
-                setNickname(res.data.nickname);
+                setNickname(res.data.nick);
                 setEmail(res.data.email);
                 setOldPassword(res.data.pw)
             });
@@ -43,7 +43,7 @@ export default function MyProfile() {
             const response = api.put('/member', {
                 id: id,
                 pw: changePw? newPassword : oldPassword,
-                nickname: nickname,
+                nick: nickname,
                 email: email,
             });
 

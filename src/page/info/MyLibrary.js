@@ -17,7 +17,7 @@ export default function MyLibrary() {
                 amount: 4,
                 offset: n.from
             })
-            console.log(response.data);
+            // console.log(response.data);
             return Promise.resolve(response.data);
         } catch (error) {
             console.error(error);
@@ -64,7 +64,7 @@ export default function MyLibrary() {
                             }
 
                             return getPins(n).then((newPins) => {
-                                console.log(newPins);
+                                // console.log(newPins);
                                 setPins([...pins, ...newPins]);
                             });
                         }}

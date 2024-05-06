@@ -1,39 +1,66 @@
 import axios from "axios";
-import Cookie from "./Cookie";
+import {getCookieToken, setRefreshToken} from "./Cookies";
 
 // Axios 인스턴스 생성
 export const api = axios.create({
     baseURL: "http://localhost:8080",
-    withCredentials: true,
-    headers: {
-        'Access-Control-Allow-Origin': "http://localhost:8080",
-    },
 });
 
 // Axios 인터셉터 설정
 api.interceptors.request.use(
     async (config) => {
-        // 쿠키 가져오기
-        const sessionCookie = Cookie.getSessionCookie;
+        const accessToken = sessionStorage.getItem("accessToken");
 
-        // 쿠키가 존재한다면 헤더에 추가
-        if (sessionCookie) {
-            config.headers["Authorization"] = `Bearer ${sessionCookie}`;
+
+        if (accessToken) {
+            config.headers.Authorization = `Bearer ${accessToken}`;
         }
-
+        // console.log(config);
         return config;
     },
     (error) => {
-        return Promise.reject(error);
+        // 예외 처리
+        console.log(error);
     }
 );
 
 api.interceptors.response.use(
     (response) => {
-        // console.log(response);
         return response;
     },
-    (error) => {
+    async (error) => {
+
+        const originalConfig = error.config;
+
+        console.log(error);
+
+        if (error.response.status === 401) {
+            const refreshToken = getCookieToken();
+            const accessToken = sessionStorage.getItem("accessToken");
+
+            if (!refreshToken) {
+                return Promise.reject(error);
+            }
+
+            try {
+                const response = await axios.post("http://localhost:8080/member/reissue", {
+                    accessToken: accessToken,
+                    refreshToken: refreshToken,
+                });
+
+                if (response.data) {
+                    const newAccessToken = response.data.accessToken;
+                    setRefreshToken(response.data.refreshToken);
+                    sessionStorage.setItem("accessToken", newAccessToken);
+                    return api(originalConfig);
+                }
+            } catch (e) {
+                console.log(e);
+                window.alert("Error: " + e.message);
+            }
+
+            return Promise.reject(error);
+        }
         return Promise.reject(error);
     }
 );

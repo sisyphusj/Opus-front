@@ -1,6 +1,6 @@
 import {useEffect, useLayoutEffect, useRef, useState} from "react";
-import {Box, Button, ButtonGroup, ComboBox, Flex, Heading, Image, NumberField, SearchField, TextField} from "gestalt";
-import {Input, Slider} from "@mui/material";
+import {Box, Button, ButtonGroup, Flex, Image, NumberField, SearchField, TextField} from "gestalt";
+import {Slider} from "@mui/material";
 import axios from "axios";
 import styled from "styled-components";
 import api from "../api";
@@ -27,9 +27,13 @@ export default function ImageGenerator() {
 
     const saveImage = async () => {
 
+        console.log(imageSize);
+
         const data = await api.post("http://localhost:8080/pin", {
             imagePath: url,
             tag: searchValue,
+            width : imageSize[0],
+            height : imageSize[1],
         });
 
         console.log(data);
@@ -67,6 +71,7 @@ export default function ImageGenerator() {
             data.then((res) => {
                 setLoading(false);
                 console.log(res.data.images[0].image);
+                console.log(res.data);
                 setUrl(res.data.images[0].image);
                 setLoading(false);
                 return res.data;

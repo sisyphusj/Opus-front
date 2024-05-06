@@ -1,7 +1,6 @@
-import {Box, Button, Flex, Image, Mask, Text} from "gestalt";
-import {useEffect, useState} from "react";
+import {Box,  Flex, Image, Mask} from "gestalt";
+import {useState} from "react";
 import styled from "styled-components";
-import PinModal from "./PinModal";
 import {useNavigate} from "react-router-dom";
 
 
@@ -29,8 +28,8 @@ export default function GridComponent({data}) {
                         <Image
                             // alt={data.name}
                             // color={data.color}
-                            naturalHeight={1024}
-                            naturalWidth={1024}
+                            naturalHeight={data.height ? data.height : 1024}
+                            naturalWidth={data.width ? data.width : 1024}
                             src={data.imagePath}
                         >
                             <Box height="100%"  onMouseOver={() => handleHover(true)}

@@ -4,10 +4,19 @@ import {Slider} from "@mui/material";
 import axios from "axios";
 import styled from "styled-components";
 import api from "../api";
+import {ReactComponent as Logo} from "../assets/logo.svg";
+import LoadingIndicator from "../component/LoadingIndicator";
+import {useRecoilValue} from "recoil";
+import {isLoginState} from "../atom";
 
 export default function ImageGenerator() {
     const apiKey = process.env.REACT_APP_KAKAO_REST_API_KEY;
-    const [loading, setLoading] = useState(true);
+
+    const [loading, setLoading] = useState(false);
+    const [imgLoad, setImgLoad] = useState(false);
+
+    const isLogin = useRecoilValue(isLoginState);
+
     const [url, setUrl] = useState("");
     const [searchValue, setSearchValue] = useState('');
     const [searchNegativeValue, setSearchNegativeValue] = useState('');
@@ -16,11 +25,15 @@ export default function ImageGenerator() {
     const mainContainerRef = useRef(null);
     const seedFieldRef = useRef(null);
     const numberFieldRef = useRef(null);
-    const [value, setValue] = useState(30);
     const [direction, setDirection] = useState('row');
     const [mainDirection, setMainDirection] = useState('row');
     const [customWidth, setCustomWidth] = useState(600);
+
     const [seed, setSeed] = useState(-1);
+    const [imgSeed, setImgSeed] = useState(-1);
+    const [imgQuality, setImgQuality] = useState(50);
+    const [guidanceScale, setGuidanceScale] = useState(5);
+
     const [samples, setSamples] = useState(1);
     const [openArray, setOpenArray] = useState([false, false, false, false]);
     const [imageSize, setImageSize] = useState([1024, 1024]);
@@ -32,8 +45,9 @@ export default function ImageGenerator() {
         const data = await api.post("http://localhost:8080/pin", {
             imagePath: url,
             tag: searchValue,
-            width : imageSize[0],
-            height : imageSize[1],
+            width: imageSize[0],
+            height: imageSize[1],
+            seed: imgSeed
         });
 
         console.log(data);
@@ -41,19 +55,21 @@ export default function ImageGenerator() {
 
     function getImages() {
         alert("click");
-
+        setImgLoad(false);
         setLoading(true);
 
-        const datas = {
+        const settings = {
             version: "v2.1",
             prompt: searchValue,
             negative_prompt: searchNegativeValue,
             width: imageSize[0],
             height: imageSize[1],
+            image_quality: imgQuality,
+            guidance_scale: guidanceScale,
         }
 
         const data = axios.post("https://api.kakaobrain.com/v2/inference/karlo/t2i",
-            JSON.stringify(datas)
+            JSON.stringify(settings)
             , {
                 headers: {
                     'Content-Type': 'application/json',
@@ -61,19 +77,14 @@ export default function ImageGenerator() {
                 },
             });
 
-        const result = data.then((res) => {
-            setLoading(false);
-            console.log(res.data);
-            return res.data;
-        });
-
         try {
             data.then((res) => {
-                setLoading(false);
                 console.log(res.data.images[0].image);
                 console.log(res.data);
                 setUrl(res.data.images[0].image);
+                setImgSeed(res.data.images[0].seed)
                 setLoading(false);
+                setImgLoad(true);
                 return res.data;
             });
         } catch (e) {
@@ -99,27 +110,11 @@ export default function ImageGenerator() {
         setImageSize(n === 1 ? [1024, 1024] : n === 2 ? [1280, 768] : n === 3 ? [768, 1280] : [512, 512])
     }
 
-    const handleSliderChange = (event, newValue) => {
-        setValue(newValue);
-    };
-
-    const handleInputChange = (event) => {
-        setValue(event.target.value === '' ? 0 : Number(event.target.value));
-    };
-
-    const handleBlur = () => {
-        if (value < 0) {
-            setValue(0);
-        } else if (value > 100) {
-            setValue(100);
-        }
-    };
-
     useLayoutEffect(() => {
         function updateDirection() {
             setDirection(window.innerWidth > 1350 ? 'row' : 'column');
             setCustomWidth(window.innerWidth > 730 ? 600 : 400);
-            setMainDirection(window.innerWidth > imageSize[0] + 1200 ? 'row' : 'column');
+            setMainDirection(window.innerWidth > 1910 ? 'row' : 'column');
         }
 
         updateDirection();
@@ -133,8 +128,6 @@ export default function ImageGenerator() {
 
     useEffect(() => {
 
-        setLoading(true);
-
         if (mainContainerRef.current) {
             mainContainerRef.current.style.minHeight = "calc(100vh - 162px)";
         }
@@ -146,16 +139,14 @@ export default function ImageGenerator() {
 
     }, []);
 
-    useEffect(() => {
-        // console.log(imageSize)
-
-    }, [imageSize]);
+    // useEffect(() => {
+    // }, [mainDirection]);
 
     return (
         <Flex direction={mainDirection} justifyContent={"center"}>
-            <Box fit marginStart={8} marginEnd={8} padding={5} ref={mainContainerRef}>
-                <Flex maxWidth={1500} minWidth={"100%"} direction="column" gap={5} flex={"grow"}>
-                    <Box maxWidth={1070} margin={4}>
+            <Box maxWidth={1000} marginStart={8} padding={5} ref={mainContainerRef}>
+                <Flex minWidth={"100%"} direction="column" gap={5} flex={"grow"}>
+                    <Box margin={4}>
                         <Label>Prompt</Label>
                         <SearchField
                             accessibilityLabel={"search"}
@@ -170,7 +161,7 @@ export default function ImageGenerator() {
                         />
                     </Box>
 
-                    <Box maxWidth={1070} marginStart={4} marginEnd={4}>
+                    <Box marginStart={4} marginEnd={4}>
                         <Label>NegativePrompt</Label>
                         <SearchField
                             accessibilityLabel={"search"}
@@ -199,6 +190,7 @@ export default function ImageGenerator() {
                                         marks
                                         min={10}
                                         max={100}
+                                        onChange={(e) => setImgQuality(e.target.value)}
                                         style={{color: "#FF9472", marginBottom: "30px"}}
                                     />
 
@@ -212,14 +204,18 @@ export default function ImageGenerator() {
                                         marks
                                         min={4}
                                         max={15}
+                                        onChange={(e) => setGuidanceScale(e.target.value)}
                                         style={{color: "#FF9472"}}
+
                                     />
                                 </Box>
 
 
                                 <Box width={200} margin={3} marginTop={5} marginBottom={5}>
                                     <Label> Seed </Label>
-                                    <TextField id={"seed"} onChange={(v) => setSeed(v)} autoComplete={"off"} size={"md"}
+                                    <TextField id={"seed"} onChange={(v) => setSeed(v)} autoComplete={"off"}
+                                               size={"md"}
+                                               value={seed}
                                                placeholder={"random seed = -1"} ref={seedFieldRef}
                                                onFocus={() => handleFieldBorder(seedFieldRef, true)}
                                                onBlur={() => handleFieldBorder(seedFieldRef, false)}/>
@@ -229,6 +225,7 @@ export default function ImageGenerator() {
                                     <Label>Samples</Label>
                                     <NumberField id={"samples"} onChange={(v) => setSamples(v)} autoComplete={"off"}
                                                  size={"md"} min={1} max={8} ref={numberFieldRef}
+                                                 value={samples}
                                                  onFocus={() => handleFieldBorder(numberFieldRef, true)}
                                                  onBlur={() => handleFieldBorder(numberFieldRef, false)}/>
                                 </Box>
@@ -253,26 +250,38 @@ export default function ImageGenerator() {
 
                             </Box>
                         </Flex>
-
-
-                        <Box fit marginTop={12}>
-                            <Flex justifyContent={"end"} alignItems="stretch">
-                                <Box width={600}>
-                                    {/*{loading ? <h1>로딩중</h1> : loading === false ? <h1>로딩 완료</h1> : null}*/}
-                                    <Button fullWidth={true} text={"Create Image"} onClick={getImages} size={"lg"}/>
-                                    <Button fullWidth={true} text={"Save"} onClick={saveImage} size={"lg"}/>
-                                </Box>
-                            </Flex>
-                        </Box>
-
-
                     </Box>
+                    <Box fit marginTop={4}>
+                        <Flex justifyContent={"end"} alignItems="stretch">
+                            <Box width={600}>
+                                <Button fullWidth={true} text={"Create Image"} onClick={getImages} size={"lg"}/>
+                                {!loading && imgLoad && isLogin &&
+                                    <Box marginTop={6}>
+                                        <Button fullWidth={true} text={"Save"} onClick={saveImage} size={"lg"}/>
+                                    </Box>}
+                            </Box>
+                        </Flex>
+                    </Box>
+
                 </Flex>
             </Box>
+            <Box margin={10} maxWidth={"100%"} minWidth={700} minHeight={700} borderStyle={"shadow"}>
+                {!loading && !imgLoad &&
+                    <Flex justifyContent={"center"} alignItems={"center"} width={"100%"} height={700}>
+                        <DefaultLogo/>
+                    </Flex>}
 
-            {!loading && <Box margin={10} height={1024}>
-                <Image alt={"picture"} naturalHeight={1024} naturalWidth={1024} fit={"cover"} src={url}/>
-            </Box>}
+                {loading && !imgLoad && <CustomLoadingIndicator/>}
+
+                {!loading && imgLoad &&
+                    <Box height={700}>
+                        <Image alt={"picture"} naturalHeight={300} naturalWidth={300} fit={"contain"} src={url}/>
+                    </Box>
+                }
+
+
+            </Box>
+
 
         </Flex>
     );
@@ -282,4 +291,15 @@ const Label = styled.h3`
     margin-left: 6px;
     margin-bottom: 4px;
     color: #F2709C;
+`;
+
+const DefaultLogo = styled(Logo)`
+    width: 200px;
+    height: 200px;
+    opacity: 0.8;
+`;
+
+const CustomLoadingIndicator = styled(LoadingIndicator)`
+    width: 200px;
+    height: 200px;
 `;

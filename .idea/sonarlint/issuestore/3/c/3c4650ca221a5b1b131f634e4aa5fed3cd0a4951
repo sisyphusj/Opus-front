@@ -1,13 +1,0 @@
-
-kjavascript:S1128"$Remove this unused import of 'Flex'.(ŒºÓãùÿÿÿÿJ$03b18242-61d8-4edd-9415-f107da1d1728
-|javascript:S1481":Remove the declaration of the unused 'isLoading' variable.(§·ÈÑJ$65d8a9ad-62ef-4b35-8cec-8ab3d2cddfd4
-yjavascript:S1854"7Remove this useless assignment to variable "isLoading".(§·ÈÑJ$42a34956-5b44-46db-aab3-3e53c9dc1ee6
-javascript:S1481"=Remove the declaration of the unused 'setIsLoading' variable.(§·ÈÑJ$adf6ea9a-eebb-4d49-bca6-7bd7a299a4e8
-|javascript:S1854":Remove this useless assignment to variable "setIsLoading".(§·ÈÑJ$60980d12-272c-4be8-b148-a69788cc6feb
-javascript:S1481"8Remove the declaration of the unused 'labelId' variable.(ûîóÒşÿÿÿÿJ$96226eb9-22e2-47ab-9706-9bf0280deead
-|javascript:S1854"5Remove this useless assignment to variable "labelId".(ûîóÒşÿÿÿÿJ$99f7b47e-74ae-417e-b8bc-8ececb68c165
-xjavascript:S4123"1Refactor this redundant 'await' on a non-promise.(£ß­ÒøÿÿÿÿJ$3746bc62-705f-42c0-8db8-51fac4096c5a
-gjavascript:S125"Remove this commented out code.(Ş¤ÚÂ8ê²£÷ò1J$83de8175-cc9c-41b4-907b-772af0ac2814
-ºjavascript:S4822 "sConsider using 'await' for the promises inside this 'try' or replace it with 'Promise.prototype.catch(...)' usages.(¡»¢üùÿÿÿÿJ$3e03183e-c6a0-4f9b-a30b-1b04e1ba06eb
-ejavascript:S125$"Remove this commented out code.(ïÑ˜úÿÿÿÿJ$b54eec74-9623-4384-b437-576a7ba4bdd4
-_javascript:S125A"Remove this commented out code.(Å¼×qJ$9d8462f0-cd4b-4402-9155-cdb11be761e5

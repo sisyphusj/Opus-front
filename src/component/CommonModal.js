@@ -1,14 +1,17 @@
 // CommonModal.js
-import React, { useRef, useState } from 'react';
+import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
 import styled from 'styled-components';
 import {IconButton, TextField} from '@mui/material';
-import { Close } from '@mui/icons-material';
-import { ReactComponent as Logo } from '../assets/logo.svg';
-import { ReactComponent as TextLogo } from '../assets/textlogo.svg';
+import {Close} from '@mui/icons-material';
+import {ReactComponent as Logo} from '../assets/logo.svg';
+import {ReactComponent as TextLogo} from '../assets/textlogo.svg';
+import {Mask} from "gestalt";
 
 
-const CustomModal = ({ isOpen, handleModal, children }) => {
+const CustomModal = ({isOpen, handleModal, type, children}) => {
     const modalRef = useRef(null);
+    const [w, setW] = useState("1200px");
+    const [h, setH] = useState("700px");
 
     const handleOverlayClick = (e) => {
         if (modalRef.current && !modalRef.current.contains(e.target)) {
@@ -16,18 +19,67 @@ const CustomModal = ({ isOpen, handleModal, children }) => {
         }
     };
 
+    useLayoutEffect(() => {
+        function updateDirection() {
+            setW(window.innerWidth > 1300 ? "1200px" : '65vw');
+            setH(window.innerHeight > 800 ? "700px" : '75vh');
+        }
+
+        updateDirection();
+
+        window.addEventListener('resize', updateDirection);
+
+        // 컴포넌트 언마운트 시 이벤트 리스너 제거
+        return () => window.removeEventListener('resize', updateDirection);
+    }, []);
+
+    const disableScroll = () => {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+
+        // 스크롤 막기
+        document.body.style.overflow = 'hidden';
+        window.scrollTo(scrollLeft, scrollTop);
+    }
+
+    const enableScroll = () => {
+        document.body.style.overflow = 'auto';
+    }
+
+    useEffect(() => {
+        disableScroll();
+
+        return () => {
+            enableScroll();
+        }
+    }, []);
+
     return (
         <>
             {isOpen && (
                 <Background onClick={(e) => handleOverlayClick(e)}>
-                    <Main ref={modalRef}>
-                        <CloseBox>
-                            <IconButton onClick={() => handleModal(false)}>
-                                <Close fontSize={'large'} />
-                            </IconButton>
-                        </CloseBox>
-                        <LoginBox>{children}</LoginBox>
-                    </Main>
+                    <Mask rounding={8}>
+                    {type === 'md'
+                        ? (<Main ref={modalRef}>
+                            <CloseBox>
+                                <IconButton onClick={() => handleModal(false)}>
+                                    <Close fontSize={'large'}/>
+                                </IconButton>
+                            </CloseBox>
+                            <LoginBox>{children}</LoginBox>
+                        </Main>)
+                        : type === 'lg' ? (
+                            <PinMain ref={modalRef} props = {w} props1 = {h}>
+                                <PinCloseBox>
+                                    <IconButton onClick={() => handleModal(false)}>
+                                        <Close fontSize={'large'}/>
+                                    </IconButton>
+                                </PinCloseBox>
+                                <LoginBox>{children}</LoginBox>
+                            </PinMain>
+                        ) : null
+                    }
+                    </Mask>
                 </Background>
             )}
         </>
@@ -52,12 +104,30 @@ export const Main = styled.div`
     height: 650px;
     background: white;
     padding: 20px;
+    //border-radius: 8px;
+`;
+
+export const PinMain = styled.div`
+    
+    width: ${({props}) => props};
+    min-width: 450px;
+    height: ${({props1}) => props1};
+    min-height: 650px;
+    background: white;
+    padding: 20px;
     border-radius: 8px;
 `;
 
 const CloseBox = styled.div`
     display: flex;
     justify-content: flex-end;
+
+`;
+
+const PinCloseBox = styled.div`
+    position: absolute;
+    right: 20px;
+    z-index: 999;
 `;
 
 const LoginBox = styled.div`

@@ -8,7 +8,6 @@ import Header from "./component/Header";
 import {Box, ColorSchemeProvider} from "gestalt";
 import MyProfile from "./page/info/MyProfile";
 import MyLibrary from "./page/info/MyLibrary";
-import PinModal from "./component/PinModal";
 
 function App() {
 
@@ -26,7 +25,6 @@ function App() {
                             <Route path="profile" element={<MyProfile/>}/>
                             <Route path="library" element={<MyLibrary/>}/>
                         </Route>
-                        <Route path="/pin" element={<PinModal/>}/>
                     </Routes>
                 </Box>
             </ColorSchemeProvider>

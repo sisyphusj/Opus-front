@@ -6,16 +6,6 @@ export const isDarkMode = atom({
     default: false
 });
 
-export const signUpOpenState = atom({
-    key: "signUpOpenState",
-    default: false,
-});
-
-export const PinModalOpenState = atom({
-    key: "PinModalOpenState",
-    default: false,
-});
-
 const {persistAtom}  = recoilPersist({
     key: 'recoil-persist',
     storage: sessionStorage,
@@ -26,6 +16,23 @@ export const isLoginState = atom({
     default: false,
     effects_UNSTABLE: [persistAtom],
 });
+
+export const signUpOpenState = atom({
+    key: "signUpOpenState",
+    default: false,
+});
+
+export const pinModalOpenState = atom({
+    key: "pinModalOpenState",
+    default: false,
+});
+
+export const currentPinState = atom({
+    key: "currentPin",
+    default: [],
+});
+
+
 
 
 

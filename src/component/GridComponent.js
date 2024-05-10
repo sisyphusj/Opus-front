@@ -2,21 +2,22 @@ import {Box,  Flex, Image, Mask} from "gestalt";
 import {useState} from "react";
 import styled from "styled-components";
 import {useNavigate} from "react-router-dom";
+import {useRecoilState} from "recoil";
+import {currentPinState, pinModalOpenState} from "../atom";
 
 
 export default function GridComponent({data}) {
     const [hover, setHover] = useState(false);
-    const [clicked, setClicked] = useState(false);
-    const navigate = useNavigate();
+    const [clicked, setClicked] = useRecoilState(pinModalOpenState);
+    const [currentPin, setCurrentPin] = useRecoilState(currentPinState);
 
     const  handleHover = (bool) => {
-        setHover(bool)
+        setHover(bool);
     }
 
     const handleClicked = (bool) => {
-        setClicked(bool)
-        alert("저장되었습니다.");
-        navigate("/pin");
+        setCurrentPin(data);
+        setClicked(bool);
     }
 
     return (

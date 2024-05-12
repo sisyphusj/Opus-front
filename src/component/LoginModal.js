@@ -9,6 +9,8 @@ import SignupModal from "./SignupModal";
 import {useRecoilState} from "recoil";
 import {signUpOpenState, isLoginState} from "../atom";
 import {useNavigate} from "react-router-dom";
+import {setRefreshToken} from "../Cookies";
+import axios from "axios";
 
 const LoginModal = () => {
     const [id, setId] = useState('');
@@ -29,13 +31,16 @@ const LoginModal = () => {
 
     const login = () => {
         try {
-            const response = api.post('/member/login', {
+            const response = axios.post('http://localhost:8080/member/login', {
                 id: id,
                 pw: password,
             });
 
             response.then((res) => {
                 if(res.status === 200) {
+                    setRefreshToken(res.data.refreshToken);
+                    sessionStorage.setItem('accessToken', res.data.accessToken);
+                    console.log(sessionStorage.getItem('accessToken'));
                     setIsLogin(true);
                 }
             });
@@ -85,8 +90,7 @@ const LoginModal = () => {
         <div>
             {!isLogin ? <Button text={'로그인'} color={'gray'} size={'lg'} onClick={() => handleModal(true)} />
                 : <Button text={'로그아웃'} color={'gray'} size={'lg'} onClick={() => logout()} />}
-            {/*<Button text={'로그인'} color={'gray'} size={'lg'} onClick={() => handleModal(true)}></Button>*/}
-            <CustomModal isOpen={isOpen} handleModal={handleModal}>
+            {isOpen && <CustomModal isOpen={isOpen} handleModal={handleModal} type={"md"}>
                 <CustomLogo />
                 <CustomTextLogo/>
                 <CustomInput
@@ -123,7 +127,7 @@ const LoginModal = () => {
                 <p style={{marginTop: '20px'}}> 계정이 없으신가요?
                     <StyledLink onClick={() => handleSignup()} style={{marginLeft: '5px'}}>회원가입</StyledLink>
                 </p>
-            </CustomModal>
+            </CustomModal>}
             {signupOpen && <SignupModal />}
         </div>
     );

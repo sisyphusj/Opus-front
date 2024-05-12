@@ -1,5 +1,5 @@
 import {useEffect, useLayoutEffect, useRef, useState} from "react";
-import {Box, Button, ButtonGroup, Flex, Image, NumberField, SearchField, TextField} from "gestalt";
+import {Box, Button, ButtonGroup, Column, Flex, Image, NumberField, SearchField, TextField} from "gestalt";
 import {Slider} from "@mui/material";
 import axios from "axios";
 import styled from "styled-components";
@@ -17,7 +17,9 @@ export default function ImageGenerator() {
 
     const isLogin = useRecoilValue(isLoginState);
 
-    const [url, setUrl] = useState("");
+    const [imageItem, setImageItem] = useState([]);
+    const [currentImg, setCurrentImg] = useState(0);
+
     const [searchValue, setSearchValue] = useState('');
     const [searchNegativeValue, setSearchNegativeValue] = useState('');
     const textFieldRef = useRef(null);
@@ -30,7 +32,6 @@ export default function ImageGenerator() {
     const [customWidth, setCustomWidth] = useState(600);
 
     const [seed, setSeed] = useState(-1);
-    const [imgSeed, setImgSeed] = useState(-1);
     const [imgQuality, setImgQuality] = useState(50);
     const [guidanceScale, setGuidanceScale] = useState(5);
 
@@ -40,14 +41,12 @@ export default function ImageGenerator() {
 
     const saveImage = async () => {
 
-        console.log(imageSize);
-
         const data = await api.post("http://localhost:8080/pin", {
-            imagePath: url,
+            imagePath: imageItem[currentImg].image,
             tag: searchValue,
             width: imageSize[0],
             height: imageSize[1],
-            seed: imgSeed
+            seed: imageItem[currentImg].seed
         });
 
         console.log(data);
@@ -57,6 +56,8 @@ export default function ImageGenerator() {
         alert("click");
         setImgLoad(false);
         setLoading(true);
+        setCurrentImg(0);
+        setImageItem([]);
 
         const settings = {
             version: "v2.1",
@@ -66,6 +67,7 @@ export default function ImageGenerator() {
             height: imageSize[1],
             image_quality: imgQuality,
             guidance_scale: guidanceScale,
+            samples: samples
         }
 
         const data = axios.post("https://api.kakaobrain.com/v2/inference/karlo/t2i",
@@ -77,12 +79,16 @@ export default function ImageGenerator() {
                 },
             });
 
+        console.log(data);
+
         try {
             data.then((res) => {
                 console.log(res.data.images[0].image);
                 console.log(res.data);
-                setUrl(res.data.images[0].image);
-                setImgSeed(res.data.images[0].seed)
+                // res.data.images.forEach(image => {
+                //     setUrl(image.image);
+                // });
+                setImageItem(res.data.images)
                 setLoading(false);
                 setImgLoad(true);
                 return res.data;
@@ -139,8 +145,9 @@ export default function ImageGenerator() {
 
     }, []);
 
-    // useEffect(() => {
-    // }, [mainDirection]);
+    useEffect(() => {
+        console.log(seed);
+    }, [seed]);
 
     return (
         <Flex direction={mainDirection} justifyContent={"center"}>
@@ -210,26 +217,27 @@ export default function ImageGenerator() {
                                     />
                                 </Box>
 
+                                <Flex>
+                                    <Box width={200} margin={3} marginTop={5}>
+                                        <Label> Seed </Label>
+                                        <TextField id={"seed"} onChange={(v) => setSeed(v.value)} autoComplete={"off"}
+                                                   size={"md"}
+                                                   value={seed}
+                                                   placeholder={"random seed = -1"} ref={seedFieldRef}
+                                                   onFocus={() => handleFieldBorder(seedFieldRef, true)}
+                                                   onBlur={() => handleFieldBorder(seedFieldRef, false)}/>
+                                    </Box>
 
-                                <Box width={200} margin={3} marginTop={5} marginBottom={5}>
-                                    <Label> Seed </Label>
-                                    <TextField id={"seed"} onChange={(v) => setSeed(v)} autoComplete={"off"}
-                                               size={"md"}
-                                               value={seed}
-                                               placeholder={"random seed = -1"} ref={seedFieldRef}
-                                               onFocus={() => handleFieldBorder(seedFieldRef, true)}
-                                               onBlur={() => handleFieldBorder(seedFieldRef, false)}/>
-                                </Box>
-
-                                <Box width={100} margin={3} marginTop={5}>
-                                    <Label>Samples</Label>
-                                    <NumberField id={"samples"} onChange={(v) => setSamples(v)} autoComplete={"off"}
-                                                 size={"md"} min={1} max={8} ref={numberFieldRef}
-                                                 value={samples}
-                                                 onFocus={() => handleFieldBorder(numberFieldRef, true)}
-                                                 onBlur={() => handleFieldBorder(numberFieldRef, false)}/>
-                                </Box>
-
+                                    <Box width={100} margin={3} marginTop={5}>
+                                        <Label>Samples</Label>
+                                        <NumberField id={"samples"} onChange={(v) => setSamples(v.value)}
+                                                     autoComplete={"off"}
+                                                     size={"md"} min={1} max={4} ref={numberFieldRef}
+                                                     value={samples}
+                                                     onFocus={() => handleFieldBorder(numberFieldRef, true)}
+                                                     onBlur={() => handleFieldBorder(numberFieldRef, false)}/>
+                                    </Box>
+                                </Flex>
 
                             </Box>
 
@@ -248,39 +256,56 @@ export default function ImageGenerator() {
                                     </ButtonGroup>
                                 </Box>
 
+                                <Box fit marginTop={7}>
+                                    <Flex justifyContent={"start"} alignItems="stretch">
+                                        <Box width={200}>
+                                            <Button fullWidth={true} text={"Create Image"} onClick={getImages}
+                                                    size={"lg"}/>
+                                            {!loading && imgLoad && isLogin &&
+                                                <Box marginTop={3}>
+                                                    <Button fullWidth={true} text={"Save"} onClick={saveImage}
+                                                            size={"lg"}/>
+                                                </Box>}
+                                        </Box>
+                                    </Flex>
+                                </Box>
+
                             </Box>
                         </Flex>
                     </Box>
-                    <Box fit marginTop={4}>
-                        <Flex justifyContent={"end"} alignItems="stretch">
-                            <Box width={600}>
-                                <Button fullWidth={true} text={"Create Image"} onClick={getImages} size={"lg"}/>
-                                {!loading && imgLoad && isLogin &&
-                                    <Box marginTop={6}>
-                                        <Button fullWidth={true} text={"Save"} onClick={saveImage} size={"lg"}/>
-                                    </Box>}
-                            </Box>
+                    <Box height={"100%"} minHeight={170} borderStyle={"lg"} padding={2}>
+                        <Flex direction={"row"} justifyContent={"center"} alignItems={"center"}>
+                            {imageItem.map((imageItem, index) => (
+                                <Box key={imageItem.id} marginEnd={4} onMouseDown={() => setCurrentImg(index)}>
+                                    <ImageContainer src={imageItem.image} alt={imageItem.seed} style={{width : "170px"}}/>
+                                </Box>
+                            ))
+                            }
                         </Flex>
                     </Box>
 
                 </Flex>
             </Box>
-            <Box margin={10} maxWidth={"100%"} minWidth={700} minHeight={700} borderStyle={"shadow"}>
-                {!loading && !imgLoad &&
-                    <Flex justifyContent={"center"} alignItems={"center"} width={"100%"} height={700}>
-                        <DefaultLogo/>
-                    </Flex>}
+            <Flex justifyContent={"center"}>
+                <Box margin={10} width={700} height={700} borderStyle={"shadow"}>
+                    {!loading && !imgLoad &&
+                        <Flex justifyContent={"center"} alignItems={"center"} width={"100%"} height={700}>
+                            <DefaultLogo/>
+                        </Flex>}
 
-                {loading && !imgLoad && <CustomLoadingIndicator/>}
+                    {loading && !imgLoad &&
+                        <Flex justifyContent={"center"} alignItems={"center"} width={"100%"} height={700}>
+                            <CustomLoadingIndicator/>
+                        </Flex>}
 
-                {!loading && imgLoad &&
-                    <Box height={700}>
-                        <Image alt={"picture"} naturalHeight={300} naturalWidth={300} fit={"contain"} src={url}/>
-                    </Box>
-                }
-
-
-            </Box>
+                    {!loading && imgLoad &&
+                        <Box height={700}>
+                            <Image alt={"picture"} naturalHeight={300} naturalWidth={300} fit={"contain"}
+                                   src={imageItem[currentImg].image}/>
+                        </Box>
+                    }
+                </Box>
+            </Flex>
 
 
         </Flex>
@@ -302,4 +327,12 @@ const DefaultLogo = styled(Logo)`
 const CustomLoadingIndicator = styled(LoadingIndicator)`
     width: 200px;
     height: 200px;
+`;
+
+const ImageContainer = styled.img`
+    width : 170px;
+    &:hover {
+        opacity: 0.7;
+    }
+    
 `;

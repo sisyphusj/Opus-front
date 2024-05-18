@@ -1,16 +1,25 @@
-import CustomModal, {CustomLogo, CustomTextLogo} from "./CommonModal";
-import {useEffect, useLayoutEffect, useState} from "react";
-import {Box, Flex, Image, Mask} from "gestalt";
-import {useRecoilState} from "recoil";
+import CustomModal, {CustomInput} from "./CommonModal";
+import React, {useEffect, useLayoutEffect, useRef, useState} from "react";
+import {Box, Flex, Mask} from "gestalt";
+import {useRecoilState, useRecoilValue} from "recoil";
 import styled from "styled-components";
-import {currentPinState, pinModalOpenState} from "../atom";
+import {currentPinState, pinModalOpenState, currentReplyState} from "../atom";
 import api from "../api";
+import Comments from "./Comment";
+
 
 export default function PinModal() {
 
     const [isOpen, setIsOpen] = useRecoilState(pinModalOpenState);
     const [pinData, setPinData] = useRecoilState(currentPinState);
+    const [commentList, setCommentList] = useState([]);
+    const [comment, setComment] = useState('');
+    const [inputLabel, setInputLabel] = useState('Comment');
     const [direction, setDirection] = useState('row');
+    const [isReplyOpen, setIsReplyOpen] = useState(false);
+    const [reply, setReply] = useState('');
+    const [currentCommentId, setCurrentCommentId] = useState(null);
+    const [signal, setSignal] = useState(false);
     const [w, setW] = useState("1200px");
     const [h, setH] = useState("700px");
 
@@ -18,19 +27,110 @@ export default function PinModal() {
         setIsOpen(bool);
     }
 
-    const getPinData = async () => {
+    const handleOnKeyDown = (e) => {
+        if (e === 'Enter') {
+            submitComment();
+        }
+    }
+
+    const getPinCommentData = async () => {
         try {
-            const response = await api.get('/pin/' + pinData.id);
-            setPinData(response.data);
+            const response = await api.get(`/comment/list/${pinData.pid}`);
+            setCommentList(response.data);
+            console.log(response.data);
         } catch (e) {
             console.error(e);
         }
 
     }
 
+    const getPinCommentDataRef = useRef(getPinCommentData);
+
+    const submitComment = async () => {
+
+        try {
+            const response = await api.post('/comment/add', {
+                pId: pinData.pid,
+                parentCommentId: null,
+                level: 0,
+                content: comment,
+            });
+            console.log(response.data);
+            setComment('');
+            getPinCommentData();
+        } catch (e) {
+            console.error(e);
+        }
+
+    }
+
+    // const Comments = ({comments}) => {
+    //     const topLevelComments = comments.filter(comment => comment.parentCommentId === null);
+    //     return (
+    //         <div>
+    //             {topLevelComments.map(comment => (
+    //                 <Comment key={comment.cid} comment={comment} comments={comments}/>
+    //             ))}
+    //         </div>
+    //     )
+    //
+    // }
+
+    // function Comment({comment, comments}) {
+    //     const replies = comments.filter(reply => reply.parentCommentId === comment.cid);
+    //     return (
+    //         <div style={{marginLeft: `${comment.level * 20}px`, marginTop: '15px'}}>
+    //             <div style={{display: "flex"}}>
+    //                 <Nick>{comment.nick}</Nick>
+    //                 <CommentLine>{comment.content}
+    //                     <div>{comment.createdDate} <IconButton onClick={() => handleReplyButton(comment)}>
+    //                         <ChatIcon/>
+    //                     </IconButton></div>
+    //                     {isReplyOpen && comment.cid === currentCommentId &&
+    //                         <Flex direction={"row"} alignItems={"center"}>
+    //                         <CustomInput
+    //                             id="reply_field"
+    //                             label={inputLabel}
+    //                             value={reply}
+    //                             onChange={(e) => setReply(e.target.value)}
+    //                             size="normal"
+    //                             onKeyDown={(e) => handleOnKeyDown(e.key)}
+    //                             InputProps={{
+    //                                 sx: {
+    //                                     borderRadius: '1.5rem',
+    //                                     width: '380px',
+    //                                 },
+    //                             }}
+    //                         />
+    //                             <IconButton onClick={() => setIsReplyOpen(false)} size={"medium"} >
+    //                                 <Close fontSize={"small"} />
+    //                             </IconButton>
+    //
+    //                         </Flex>
+    //                     }
+    //                 </CommentLine>
+    //             </div>
+    //
+    //
+    //             {replies.map(reply => (
+    //                 <Comment key={reply.cid} comment={reply} comments={comments}/>
+    //             ))}
+    //         </div>
+    //     );
+    // }
+
+    // const handleReplyButton = (comment) => {
+    //     setInputLabel(`Reply to ${comment.nick}`);
+    //     setIsReplyOpen(true);
+    //     setCurrentCommentId(comment.cid);
+    // }
+
+    useEffect(() => {
+        getPinCommentData();
+    }, []);
+
     useEffect(() => {
         console.log(pinData);
-        console.log(typeof(pinData.width));
     }, [pinData])
 
     useLayoutEffect(() => {
@@ -62,17 +162,50 @@ export default function PinModal() {
                                         <PinImgH alt={pinData.id} src={pinData.imagePath}/>
                                     )}
                                 </Box>
-                                <Box width={"100%"} height={"100%"} minHeight={650}
-                                     color={"lightWash"}>
-                                    seed : {pinData.seed}
-                                    <br/>
-                                    memberid : {pinData.mid}
-                                    <br/>
-                                    width : {pinData.width}
-                                    <br/>
-                                    height : {pinData.height}
-                                    <br/>
-                                    tag : {pinData.tag}
+                                <Box paddingX={4} width={"100%"} height={"100%"} minHeight={650}>
+                                    <Flex direction={"column"} justifyContent={"between"} height={"100%"}>
+
+                                        <Box>
+                                            <NickLabel>User {pinData.nick}</NickLabel>
+                                        </Box>
+
+                                        <Box marginStart={3} marginBottom={5}>
+                                            <Label>Seed</Label>
+                                            {pinData.seed}
+                                        </Box>
+
+                                        <Box marginStart={3} marginBottom={5}>
+                                            <Label>Prompt</Label>
+                                            {pinData.tag}
+                                        </Box>
+
+                                        <Box marginStart={3} marginBottom={5}>
+                                            <Label>Negative Prompt</Label>
+                                            {pinData.ntag}
+                                        </Box>
+
+                                        <Label style={{marginLeft: "10px"}}>Comment</Label>
+                                        <CommentContainer>
+                                            <Box marginTop={3}>
+                                                <Comments comments={commentList} getPinCommentDataRef = {getPinCommentDataRef} />
+                                            </Box>
+                                        </CommentContainer>
+                                        <CustomInput
+                                            id="comment_field"
+                                            label="Comment"
+                                            value={comment}
+                                            onChange={(e) => setComment(e.target.value)}
+                                            size="normal"
+                                            margin="dense"
+                                            onKeyDown={(e) => handleOnKeyDown(e.key)}
+                                            InputProps={{
+                                                sx: {
+                                                    borderRadius: '1.5rem',
+                                                    width: '580px',
+                                                },
+                                            }}
+                                        />
+                                    </Flex>
                                 </Box>
                             </Flex>
                         </Mask>) : (
@@ -100,17 +233,10 @@ const Container = styled.div`
     min-height: 650px;
     overflow: auto;
     z-index: 998;
-    //display: flex;
-    //justify-content: center;
-    //align-items: center;
-
-    /* 가로 스크롤바 너비를 0으로 설정하여 숨김 */
 
     &::-webkit-scrollbar {
         width: 0;
     }
-
-    /* 옵션: 수직 스크롤바 숨기기 */
 
     &::-webkit-scrollbar-thumb {
         display: none;
@@ -127,4 +253,44 @@ const PinImgW = styled.img`
     border-radius: 1.2em;
     width: 100%;
     height: auto;
+`;
+
+const NickLabel = styled.h1`
+    margin-left: 6px;
+    margin-bottom: 10px;
+    color: #F2709C;
+`;
+
+const Label = styled.h3`
+    margin-bottom: 5px;
+`;
+
+const CommentContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin-left: 10px;
+    width: 100%;
+    height: 100%;
+    //max-height: 250px;
+    overflow: auto;
+
+    &::-webkit-scrollbar {
+        width: 0;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        display: none;
+    }
+`;
+
+const Nick = styled.div`
+    font-size: 20px;
+    font-weight: bold;
+`;
+
+const CommentLine = styled.div`
+    margin-left: 8px;
+    font-size: 15px;
+    margin-top: 2px;
 `;

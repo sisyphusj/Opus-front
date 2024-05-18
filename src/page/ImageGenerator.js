@@ -46,7 +46,8 @@ export default function ImageGenerator() {
             tag: searchValue,
             width: imageSize[0],
             height: imageSize[1],
-            seed: imageItem[currentImg].seed
+            seed: imageItem[currentImg].seed,
+            nTag : searchNegativeValue,
         });
 
         console.log(data);

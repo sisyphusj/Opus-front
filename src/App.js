@@ -1,5 +1,5 @@
 import {useRecoilValue} from "recoil";
-import {isDarkMode} from "./atom";
+import {isDarkMode, pinModalOpenState} from "./atom";
 import Home from "./page/Home";
 import Setting from "./page/info/Setting";
 import ImageGenerator from "./page/ImageGenerator";
@@ -8,10 +8,12 @@ import Header from "./component/Header";
 import {Box, ColorSchemeProvider} from "gestalt";
 import MyProfile from "./page/info/MyProfile";
 import MyLibrary from "./page/info/MyLibrary";
+import PinModal from "./component/PinModal";
 
 function App() {
 
     const mode = useRecoilValue(isDarkMode);
+    const isPinOpen = useRecoilValue(pinModalOpenState);
 
     return (
         <BrowserRouter>
@@ -26,6 +28,7 @@ function App() {
                             <Route path="library" element={<MyLibrary/>}/>
                         </Route>
                     </Routes>
+                    {isPinOpen && <PinModal/>}
                 </Box>
             </ColorSchemeProvider>
         </BrowserRouter>

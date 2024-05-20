@@ -1,7 +1,6 @@
 import React from 'react';
 import { ReactComponent as Logo } from '../assets/logo.svg';
 import styled from "styled-components";
-import {Background} from "./CommonModal";
 
 const LoadingIndicator = () => {
     const pulseAnimation = {
@@ -37,3 +36,12 @@ const LoadingIndicator = () => {
 };
 
 export default LoadingIndicator;
+
+const Background = styled.div`
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+`

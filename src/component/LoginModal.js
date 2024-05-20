@@ -2,14 +2,13 @@
 import React, {useEffect, useState} from 'react';
 import styled from 'styled-components';
 import api from '../api';
-import {CustomLogo, CustomTextLogo, CustomInput, CustomButton} from './CommonModal';
-import CustomModal from './CommonModal';
+import CustomModal, {CustomLogo, CustomTextLogo, CustomInput, CustomButton} from './CommonModal';
 import {Button} from 'gestalt';
 import SignupModal from "./SignupModal";
 import {useRecoilState} from "recoil";
 import {signUpOpenState, isLoginState} from "../atom";
 import {useNavigate} from "react-router-dom";
-import {setRefreshToken} from "../Cookies";
+import {removeCookieToken, setRefreshToken} from "../Cookies";
 import axios from "axios";
 
 const LoginModal = () => {
@@ -64,6 +63,8 @@ const LoginModal = () => {
 
             response.then((res) => {
                 if(res.status === 200) {
+                    removeCookieToken();
+                    sessionStorage.removeItem('accessToken');
                     setIsLogin(false);
                 }
             });

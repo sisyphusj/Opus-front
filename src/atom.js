@@ -32,6 +32,29 @@ export const currentPinState = atom({
     default: [],
 });
 
+export const isReplyOpenState = atom({
+    key: "isReplyOpenState",
+    default: false,
+});
+
+export const currentReplyState = atom({
+    key: "currentReplyState",
+    default: null,
+});
+
+export const commentListState = atom({
+    key: "commentListState",
+    default: [],
+});
+
+export const searchKeywordState = atom({
+    key: "searchKeywordState",
+    default: null,
+});
+
+
+
+
 
 
 

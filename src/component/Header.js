@@ -1,9 +1,9 @@
-import {useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {Box, Flex, IconButton, SearchField, Button, Sticky, FixedZIndex} from 'gestalt';
 import {ReactComponent as LightLogo} from "../assets/lightlogo.svg";
 import {ReactComponent as DarkLogo} from "../assets/darklogo.svg";
 import {NavLink, useNavigate} from "react-router-dom";
-import {isDarkMode, isLoginState} from "../atom";
+import {isDarkMode, isLoginState, searchKeywordState} from "../atom";
 import {useRecoilState} from "recoil";
 import LoginModal from "./LoginModal";
 
@@ -14,6 +14,7 @@ export default function Header() {
     const [turnDarkMode, setTurnDarkMode] = useRecoilState(isDarkMode);
     const customZIndex = new FixedZIndex(999);
     const [isLogin, setIsLogin] = useRecoilState(isLoginState);
+    const [keyword, setKeyword] = useRecoilState(searchKeywordState);
 
     function handleEditButton() {
         navigate("/image-generator");
@@ -44,18 +45,36 @@ export default function Header() {
         }
     }
 
+    const handleOnKeyDown = async (key) => {
+        if (key === 'Enter') {
+            console.log("검색어 : " + searchValue);
+
+            setKeyword(searchValue);
+        }
+    }
+
+    const handleLogoOnClick = () => {
+        setKeyword(null);
+        navigate("/");
+        window.location.reload();
+    }
+
+    useEffect(() => {
+        setKeyword(null);
+    }, []);
+
     return (
-        <Sticky top = {0} zIndex={customZIndex}>
+        <Sticky top={0} zIndex={customZIndex}>
             <Box
                 padding={8}
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
-                color= {turnDarkMode ? "dark" : "light"}
+                color={turnDarkMode ? "dark" : "light"}
                 borderStyle={"shadow"}
             >
                 <Flex alignItems="center" flex="grow" gap={{row: 4, column: 0}}>
-                    <NavLink to={"/"} style={{textDecoration: "none"}}>
+                    <NavLink to={"/"} onClick={() => handleLogoOnClick()} style={{textDecoration: "none"}}>
                         {turnDarkMode ? <DarkLogo width="110" height="54"/> : <LightLogo width="110" height="54"/>}
                     </NavLink>
                     <Button text={"만들기"} color={"gray"} size={"lg"} onClick={() => handleEditButton()}></Button>
@@ -67,6 +86,9 @@ export default function Header() {
                             placeholder="검색"
                             value={searchValue}
                             ref={SearchFieldRef}
+                            onKeyDown={(e) =>
+                                handleOnKeyDown(e.event.key)
+                            }
                             onFocus={() => {
                                 handleTextFieldShadow(true)
                             }} onBlur={() => {

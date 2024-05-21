@@ -68,7 +68,7 @@ export default function PinModal() {
 
             response.then((res) => {
                 setNickname(res.data.nick);
-                console.log("나의 닉네임은 ", res.data.nick);
+                // console.log("나의 닉네임은 ", res.data.nick);
             });
         } catch (e) {
             console.log(e);
@@ -135,7 +135,6 @@ export default function PinModal() {
                                 </Box>
                                 <Box paddingX={4} width={"100%"} height={"100%"} minHeight={650}>
                                     <Flex direction={"column"} justifyContent={"between"} height={"100%"}>
-
                                         <Flex>
                                             <NickLabel>User {pinData.nick}</NickLabel> {isMyPin && (
                                             <DeleteButton onClick={() => setIsDelete(true)}> delete </DeleteButton>
@@ -180,6 +179,7 @@ export default function PinModal() {
                                                 <Comments comments={commentList}/>
                                             </Box>
                                         </CommentContainer>
+
                                         <CustomInput
                                             id="comment_field"
                                             label="Comment"

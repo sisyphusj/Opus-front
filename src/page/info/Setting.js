@@ -10,11 +10,13 @@ export default function Setting() {
     const [activeIndex, setActiveIndex] = useState(0);
     const tabRef1 = useRef(null);
     const tabRef2 = useRef(null);
+    const tabRef3 = useRef(null);
     const customZIndex = new FixedZIndex(1);
 
     useLayoutEffect(() => {
         tabRef1.current.querySelector('.tBJ').style.fontSize = "18px";
         tabRef2.current.querySelector('.tBJ').style.fontSize = "18px";
+        tabRef3.current.querySelector('.tBJ').style.fontSize = "18px";
 
     }, []);
 
@@ -26,6 +28,9 @@ export default function Setting() {
         } else if (index === 1) {
             setActiveIndex(index);
             navigate("/settings/library");
+        } else if (index === 2) {
+            setActiveIndex(index);
+            navigate("/settings/comment");
         }
     };
 
@@ -34,12 +39,14 @@ export default function Setting() {
             setActiveIndex(0);
         } else if (window.location.pathname === "/settings/library") {
             setActiveIndex(1);
+        } else if (window.location.pathname === "/settings/comment") {
+            setActiveIndex(2);
         }
     }, []);
 
     return (
         <Box marginStart={7} marginEnd={7} maxWidth={1200}>
-            <Flex  justifyContent={"between"}>
+            <Flex justifyContent={"between"}>
                 <Box zIndex={customZIndex}>
                     <Sticky top={122}>
                         <Box width={100} marginEnd={7} height={150}>
@@ -47,6 +54,7 @@ export default function Setting() {
                                   onChange={({activeTabIndex}) => handleTabClick(activeTabIndex)} tabs={[
                                 {text: 'profile', ref: tabRef1},
                                 {text: 'my Library', ref: tabRef2},
+                                {text: 'my Comment', ref: tabRef3}
                             ]}
                                   wrap={true}
                             />

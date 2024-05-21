@@ -9,6 +9,7 @@ import {Box, ColorSchemeProvider} from "gestalt";
 import MyProfile from "./page/info/MyProfile";
 import MyLibrary from "./page/info/MyLibrary";
 import PinModal from "./component/PinModal";
+import MyComment from "./page/info/MyComment";
 
 function App() {
 
@@ -26,6 +27,7 @@ function App() {
                         <Route path="/settings" element={<Setting/>}>
                             <Route path="profile" element={<MyProfile/>}/>
                             <Route path="library" element={<MyLibrary/>}/>
+                            <Route path="comment" element={<MyComment/>}/>
                         </Route>
                     </Routes>
                     {isPinOpen && <PinModal/>}

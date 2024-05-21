@@ -4,11 +4,18 @@ import {Box, Button, Flex, Heading, Text, TextField} from "gestalt";
 import styled from "styled-components";
 import LoadingIndicator from "../../component/LoadingIndicator";
 import {Background, CustomButton} from "../../component/CommonModal";
+import {removeCookieToken} from "../../Cookies";
+import {useRecoilState} from "recoil";
+import {isLoginState} from "../../atom";
+import {useNavigate} from "react-router-dom";
 
 export default function MyProfile() {
 
+    const navigate = useNavigate();
     const [changePw, setChangePw] = useState(false);
     const [isSave, setIsSave] = useState(false);
+    const [isDelete, setIsDelete] = useState(false)
+    const [isLogin, setIsLogin] = useRecoilState(isLoginState);
 
     const idFieldRef = useRef(null);
     const pwFieldRef = useRef(null);
@@ -27,18 +34,25 @@ export default function MyProfile() {
         try {
             const response = api.get('/member/profile');
 
+            console.log(response);
+
             response.then((res) => {
                 setId(res.data.id);
                 setNickname(res.data.nick);
                 setEmail(res.data.email);
                 setOldPassword(res.data.pw)
             });
+            console.log(oldPassword);
         } catch (e) {
             console.log(e);
         }
     }
 
+    // 이거 수정 필요 pw 부분
     const submitProfile = () => {
+
+        console.log(oldPassword);
+
         try {
             const response = api.put('/member', {
                 id: id,
@@ -55,6 +69,24 @@ export default function MyProfile() {
         } catch (e) {
             console.log(e);
         }
+    }
+
+    const deleteProfile = async () => {
+
+        try {
+            const response = await api.delete('/member');
+            if(response.status === 200) {
+                sessionStorage.removeItem('accessToken');
+                removeCookieToken();
+                setIsLogin(false);
+                navigate('/');
+                window.location.reload();
+            }
+        } catch (e) {
+            console.log(e);
+        }
+
+        setIsDelete(false);
     }
 
     const handleFieldBorder = (ref, boolean) => {
@@ -147,8 +179,12 @@ export default function MyProfile() {
             </Box>
 
             <Flex justifyContent={"end"}>
-                <Box marginTop={12}>
+                <Box marginTop={12} marginEnd={6}>
                     <SaveButton onClick={() => setIsSave(true)}> 저장 </SaveButton>
+                </Box>
+
+                <Box marginTop={12}>
+                    <DeleteButton onClick={() => setIsDelete(true)}> 회원 탈퇴 </DeleteButton>
                 </Box>
             </Flex>
 
@@ -166,12 +202,37 @@ export default function MyProfile() {
                 </CheckSaveBox>
             </Background>}
 
+            {isDelete && <Background>
+                <CheckSaveBox>
+                    <Heading color={"dark"} size={"400"}>정말로 회원 탈퇴하시겠습니까?</Heading>
+                    <Flex>
+                        <Box marginTop={6}>
+                            <ChangeButton onClick={() => deleteProfile()}> 네</ChangeButton>
+                            <ChangeButton onClick={() => setIsDelete(false)} style={{
+                                marginLeft: "20px"
+                            }}> 아니요</ChangeButton>
+                        </Box>
+                    </Flex>
+                </CheckSaveBox>
+            </Background>}
+
         </Box>
     );
 }
 
 const SaveButton = styled(CustomButton)`
     width: 150px;
+`;
+
+const DeleteButton = styled(CustomButton)`
+    width: 150px;
+    border: 1px solid #F2709C;
+    color: #F2709C;
+    
+    &:hover {
+        background: #F2709C;
+        color: white;
+    }
 `;
 
 const ChangeButton = styled(CustomButton)`

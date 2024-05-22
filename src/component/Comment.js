@@ -1,26 +1,31 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {CustomInput} from "./CommonModal";
 import {Flex} from "gestalt";
-import {IconButton} from "@mui/material";
+import {Collapse, IconButton, MenuItem, Button} from "@mui/material";
 import {ReactComponent as ChatIcon} from "../assets/chat.svg";
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import styled from "styled-components";
 import {Close} from "@mui/icons-material";
 import api from "../api";
 import {useRecoilState, useRecoilValue} from "recoil";
-import {commentListState, currentPinState, currentReplyState, isReplyOpenState} from "../atom";
+import {commentListState, currentPinState, currentReplyState, isLoginState, isReplyOpenState} from "../atom";
+import Popper from "@mui/material/Popper";
+import Grow from "@mui/material/Grow";
+import Paper from "@mui/material/Paper";
+import ClickAwayListener from "@mui/material/ClickAwayListener";
+import MenuList from "@mui/material/MenuList";
 
-const Comments = ({ comments }) => {
-    const topLevelComments = comments.filter(comment => comment.parentCommentId === null);
+const Comments = ({comments}) => {
+    const topLevelComments = comments.filter(comment => comment.topLevelCommentId === null);
     const bottomRef = useRef(null);
     const isInitialMount = useRef(0);
 
     useEffect(() => {
-        console.log("comments changed");
         if (isInitialMount.current < 2) {
-            isInitialMount.current ++;
+            isInitialMount.current++;
         } else {
             if (bottomRef.current) {
-                bottomRef.current.scrollIntoView({ behavior: "smooth" });
+                bottomRef.current.scrollIntoView({behavior: "smooth"});
             }
         }
     }, [comments]);
@@ -35,13 +40,22 @@ const Comments = ({ comments }) => {
     );
 };
 
-const Comment = React.memo(({ comment, comments }) => {
+const Comment = React.memo(({comment, comments}) => {
+    const isLogin = useRecoilValue(isLoginState);
     const [isReplyOpen, setIsReplyOpen] = useRecoilState(isReplyOpenState);
+    const [isUpdateOpen, setIsUpdateOpen] = useState(false);
     const [reply, setReply] = useState('');
     const [currentCommentId, setCurrentCommentId] = useRecoilState(currentReplyState);
-    const replies = comments.filter(reply => reply.parentCommentId === comment.cid);
+    const replies = comments.filter(reply => reply.topLevelCommentId === comment.cid);
     const pinData = useRecoilValue(currentPinState);
     const [commentList, setCommentList] = useRecoilState(commentListState);
+    const [nickname, setNickname] = useState('');
+    const [open, setOpen] = useState(false);
+    const anchorRef = useRef(null);
+    const containerRef = useRef(null);
+    const [currentDate, setCurrentDate] = useState('');
+    const inputRef = useRef(null);
+    const [showAllReplies, setShowAllReplies] = useState(false);
 
     const getCommentData = async () => {
 
@@ -54,17 +68,33 @@ const Comment = React.memo(({ comment, comments }) => {
         }
     };
 
-
     const handleReplyButton = (comment) => {
-        setIsReplyOpen(false);
-        setCurrentCommentId(comment.cid);
-        setIsReplyOpen(true);
+        if (isReplyOpen && comment.cid === currentCommentId) {
+            setIsReplyOpen(false);
+            setCurrentCommentId(null);
+        } else {
+            setIsReplyOpen(false);
+            setOpen(false);
+            setCurrentCommentId(comment.cid);
+            setIsReplyOpen(true);
+        }
+    };
+
+    const handleUpdateButton = (comment) => {
+        setIsUpdateOpen(true);
+        handleReplyButton(comment);
+    };
+
+    const handleShowAllReplies = () => {
+        setShowAllReplies((prev) => !prev);
     };
 
     const handleOnKeyDown = (key) => {
         if (key === 'Enter') {
-            console.log(reply);
-            submitReply();
+            if (isUpdateOpen)
+                updateComment();
+            else
+                submitReply();
         }
     };
 
@@ -75,12 +105,18 @@ const Comment = React.memo(({ comment, comments }) => {
 
     const submitReply = async () => {
 
-        try{
+        if (!isLogin) {
+            alert("로그인이 필요합니다.");
+            return;
+        }
+
+        try {
             const response = await api.post('/comment/add', {
-                pId : comment.pid,
-                parentCommentId : comment.cid,
-                content : reply,
-                level : comment.level + 1,
+                pId: comment.pid,
+                topLevelCommentId: comment.level === 0 ? comment.cid : comment.topLevelCommentId,
+                content: reply,
+                level: 1,
+                parentNick: comment.nick,
             });
 
             console.log(response);
@@ -94,14 +130,187 @@ const Comment = React.memo(({ comment, comments }) => {
         }
     }
 
+    const updateComment = async () => {
+
+        console.log(comment.cid);
+
+        try {
+            const response = await api.post('/comment/update', {
+                cId: comment.cid,
+                pId: comment.pid,
+                level: comment.level,
+                content: reply,
+            });
+
+            console.log(response);
+            setReply('');
+            await getCommentData();
+            setIsReplyOpen(false);
+            setCurrentCommentId(null);
+
+        } catch (e) {
+            console.log(e);
+        }
+        setOpen(false);
+    }
+
+    const deleteComment = async () => {
+
+        try {
+            const response = await api.delete(`comment/delete/${comment.cid}`);
+
+            console.log(response);
+            await getCommentData();
+            setCurrentCommentId(null);
+        } catch (e) {
+            console.log(e);
+        }
+        setOpen(false);
+    }
+
+    const getNick = () => {
+        try {
+            const response = api.get('/member/profile');
+
+            response.then((res) => {
+                setNickname(res.data.nick);
+            });
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    const handleToggle = () => {
+        setIsReplyOpen(false);
+        setOpen((prevOpen) => !prevOpen);
+    };
+
+    const handleClose = (event) => {
+        if (anchorRef.current && anchorRef.current.contains(event.target)) {
+            return;
+        }
+
+        setOpen(false);
+    };
+
+    const handleListKeyDown = (event) => {
+        if (event.key === 'Tab') {
+            event.preventDefault();
+            setOpen(false);
+        } else if (event.key === 'Escape') {
+            setOpen(false);
+        }
+    }
+
+    const scrollToMiddle = () => {
+        if (containerRef.current && inputRef.current) {
+            const containerHeight = containerRef.current.clientHeight;
+            const inputPosition = inputRef.current.getBoundingClientRect().top - containerRef.current.getBoundingClientRect().top;
+            containerRef.current.scrollTo({
+                top: inputPosition - containerHeight / 2,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    useEffect(() => {
+        setIsReplyOpen(false);
+
+        if (isLogin) {
+            getNick();
+        }
+    }, []);
+
+    useEffect(() => {
+
+        const createDate = new Date(comment.createdDate);
+        const updateDate = new Date(comment.updatedDate);
+
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        };
+
+        if (updateDate >= createDate) {
+            setCurrentDate(formatDate(updateDate));
+        } else {
+            setCurrentDate(formatDate(createDate));
+        }
+    }, []);
+
+    useEffect(() => {
+        if (isReplyOpen && comment.cid === currentCommentId && inputRef.current) {
+            scrollToMiddle();
+            inputRef.current.focus();
+        }
+    }, [isReplyOpen, comment.cid, currentCommentId]);
+
     return (
-        <div style={{ marginLeft: `${comment.level * 20}px`, marginTop: '15px' }}>
-            <div style={{ display: "flex" }}>
-                <Nick>{comment.nick}</Nick>
-                <CommentLine>{comment.content}
-                    <div>{comment.createdDate} <IconButton onClick={() => handleReplyButton(comment)}>
-                        <ChatIcon />
-                    </IconButton></div>
+        <div>
+            <div style={{display: "flex", marginLeft: `${comment.level * 20}px`, marginTop: '15px'}}>
+                <Nick style={{marginRight: "5px"}}>{comment.nick}</Nick>
+                <CommentLine>
+                    <div style={{
+                        width: "300px",
+                        wordWrap: "break-word",
+                        whiteSpace: "normal"
+                    }}>{comment.parentNick && <>@{comment.parentNick}</>} {comment.content}</div>
+                    <div style={{display: "flex"}}>
+                        <div style={{marginTop: "10px"}}>
+                            {currentDate}
+                        </div>
+
+                        <IconButton onClick={() => handleReplyButton(comment)}>
+                            <ChatIcon/>
+                        </IconButton>
+
+                        <div ref={containerRef} style={{position: 'relative'}}>
+
+                            {isLogin && nickname === comment.nick && <IconButton onClick={handleToggle} ref={anchorRef}>
+                                <MoreHorizIcon/>
+                            </IconButton>}
+
+                            <Popper
+                                open={open}
+                                anchorEl={anchorRef.current}
+                                role={undefined}
+                                placement="bottom-start"
+                                transition
+                                disablePortal
+                                container={containerRef.current}
+                                style={{zIndex: 3}}
+                            >
+                                {({TransitionProps, placement}) => (
+                                    <Grow
+                                        {...TransitionProps}
+                                        style={{
+                                            transformOrigin:
+                                                placement === 'bottom-start' ? 'left top' : 'left bottom',
+                                        }}
+                                    >
+                                        <Paper>
+                                            <ClickAwayListener onClickAway={handleClose}>
+                                                <MenuList
+                                                    autoFocusItem={open}
+                                                    id="composition-menu"
+                                                    aria-labelledby="composition-button"
+                                                    onKeyDown={handleListKeyDown}
+                                                >
+                                                    <MenuItem onClick={() => handleUpdateButton(comment)}>수정</MenuItem>
+                                                    <MenuItem onClick={() => deleteComment()}>삭제</MenuItem>
+                                                </MenuList>
+                                            </ClickAwayListener>
+                                        </Paper>
+                                    </Grow>
+                                )}
+                            </Popper>
+                        </div>
+                    </div>
                     {isReplyOpen && comment.cid === currentCommentId &&
                         <Flex direction={"row"} alignItems={"center"}>
                             <CustomInput
@@ -117,18 +326,38 @@ const Comment = React.memo(({ comment, comments }) => {
                                         width: '380px',
                                     },
                                 }}
+                                inputRef={inputRef}
                             />
-                            <IconButton onClick={() => handleCloseReply()} size={"medium"} >
-                                <Close fontSize={"small"} />
+                            <IconButton onClick={() => handleCloseReply()} size={"medium"}>
+                                <Close fontSize={"small"}/>
                             </IconButton>
                         </Flex>
                     }
                 </CommentLine>
             </div>
 
-            {replies.map(reply => (
-                <Comment key={reply.cid} comment={reply} comments={comments} />
-            ))}
+            {comment.level === 0 ? (
+                <>
+                    {replies.length > 0 && (
+                        <Button size = {"small"} variant={"text"} onClick={handleShowAllReplies} style={{marginLeft : "55px"}} >
+                            {showAllReplies ? '숨기기' : `모든 대댓글 보기 (${comments.filter(reply => reply.topLevelCommentId === comment.cid).length})`}
+                        </Button>
+                    )}
+
+                    <Collapse in={showAllReplies}>
+                        {replies.map((reply) => (
+                            <Comment key={reply.cid} comment={reply} comments={comments}/>
+                        ))}
+                    </Collapse>
+                </>
+            ) : (
+                <>
+                    {replies.map((reply) => (
+                        <Comment key={reply.cid} comment={reply} comments={comments}/>
+                    ))}
+                </>
+            )}
+
         </div>
     );
 });

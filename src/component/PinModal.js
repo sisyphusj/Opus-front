@@ -50,7 +50,7 @@ export default function PinModal() {
         try {
             const response = await api.post('/comment/add', {
                 pId: pinData.pid,
-                parentCommentId: null,
+                topLevelCommentId: null,
                 level: 0,
                 content: comment,
             });

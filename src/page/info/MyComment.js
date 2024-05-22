@@ -1,12 +1,22 @@
 import api from "../../api";
-import {useEffect, useRef, useState} from "react";
-import {Box, Flex, Heading, Table, TextField, Text, WashAnimated} from "gestalt";
-import styled from "styled-components";
-import {Background, CustomButton} from "../../component/CommonModal";
+import {Fragment, useEffect, useState} from "react";
+import {TableCell, TableRow} from "@mui/material";
+import Box from '@mui/material/Box';
+import Collapse from '@mui/material/Collapse';
+import IconButton from '@mui/material/IconButton';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import {Heading, Sticky} from "gestalt";
+
 
 export default function MyComment() {
     const [commentData, setCommentData] = useState([]);
-    const [active, setActive] = useState(false);
 
     const getCommentData = async () => {
         try {
@@ -19,122 +29,76 @@ export default function MyComment() {
     }
 
     useEffect(() => {
-        setActive(false);
         getCommentData();
     }, []);
 
+
     const BaseRow = ({data}) => {
+        const [open, setOpen] = useState(false);
+
         return (
-            <Table.RowExpandable
-                accessibilityCollapseLabel="Collapse"
-                accessibilityExpandLabel="Expand"
-                expandedContents={
-                    <Box
-                        column={12}
-                        display="flex"
-                        justifyContent="center"
-                        maxWidth={236}
-                        onMouseDown={() => setActive(!active)}
-                        padding={2}
-                    >
-                        <WashAnimated
-                            active={active}
-                            image={
-                                <Box
-                                    column={12}
-                                    display="flex"
-                                    justifyContent="center"
-                                    maxWidth={236}
-                                    padding={2}
-                                >
-                                    {/*<Avatar name={`${name}avatar`} size="md" src={src} />*/}
-                                </Box>
-                            }
+            <Fragment>
+                <TableRow sx={{'& > *': {borderBottom: 'unset'}}}>
+                    <TableCell>
+                        <IconButton
+                            aria-label="expand row"
+                            size="small"
+                            onClick={() => setOpen(!open)}
                         >
-                            <Text align="center" weight="bold">
-                                sample
-                            </Text>
-                        </WashAnimated>
-                    </Box>
-                }
-                id={data.nick}
-                onExpand={() => {
-                }}
-            >
-                <Table.Cell>
-                    <Text>{data.nick} 님의 게시글</Text>
-                </Table.Cell>
-                <Table.Cell>
-                    <Text>{data.content}</Text>
-                </Table.Cell>
-                <Table.Cell>
-                    <Text>{data.updatedDate}</Text>
-                </Table.Cell>
-            </Table.RowExpandable>
+                            {open ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
+                        </IconButton>
+                    </TableCell>
+
+                    <TableCell component="th" scope="row">
+                        {data.nick}
+                    </TableCell>
+                    <TableCell align="right">{data.content}</TableCell>
+                    <TableCell align="right">{data.updatedDate}</TableCell>
+                </TableRow>
+
+                <TableRow>
+                    <TableCell style={{paddingBottom: 0, paddingTop: 0}} colSpan={6}>
+                        <Collapse in={open} timeout="auto" unmountOnExit>
+                            <Box sx={{margin: 1}}>
+                                <Typography variant="h6" gutterBottom component="div">
+                                    History
+                                </Typography>
+                                <Table size="small" aria-label="purchases">
+                                    sample
+                                </Table>
+                            </Box>
+                        </Collapse>
+                    </TableCell>
+                </TableRow>
+            </Fragment>
         );
     }
 
-
     return (
         <Box minHeight={"calc(100vh - 154px)"}>
-            <Box marginBottom={6}>
-                <Heading> 나의 댓글 </Heading>
-            </Box>
+            <Sticky top={0}>
+                <Box marginBottom={6}>
+                    <Heading> 나의 댓글 </Heading>
+                </Box>
+            </Sticky>
 
-                <Table accessibilityLabel={"My Comment"} maxHeight={600}>
-                    <Table.Header sticky>
-                        <Table.Row>
-                            <Table.HeaderCell>
-                                <Box display="visuallyHidden">
-                                    <Text weight="bold">Open/Close row</Text>
-                                </Box>
-                            </Table.HeaderCell>
-                            {['Pin', 'Content', 'Updated Date'].map((title) => (
-                                <Table.HeaderCell key={title}>
-                                    <Text weight="bold">{title}</Text>
-                                </Table.HeaderCell>
-                            ))}
-                        </Table.Row>
-                    </Table.Header>
-                    <Table.Body>
-                        {commentData.map((data) => (
-                            <BaseRow key={data.cid} data={data}/>
+            <TableContainer component={Paper}>
+                <Table aria-label="collapsible table">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell/>
+                            <TableCell>Nickname</TableCell>
+                            <TableCell> Content</TableCell>
+                            <TableCell> Date</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {commentData.map((row) => (
+                            <BaseRow key={row.cid} data={row}/>
                         ))}
-                    </Table.Body>
+                    </TableBody>
                 </Table>
+            </TableContainer>
         </Box>
     );
 }
-
-const SaveButton = styled(CustomButton)`
-    width: 150px;
-`;
-
-const DeleteButton = styled(CustomButton)`
-    width: 150px;
-    border: 1px solid #F2709C;
-    color: #F2709C;
-
-    &:hover {
-        background: #F2709C;
-        color: white;
-    }
-`;
-
-const ChangeButton = styled(CustomButton)`
-    width: 90px;
-    height: 49px;
-    border-radius: 1rem;
-    font-size: 16px;
-`;
-
-const CheckSaveBox = styled.div`
-    width: 450px;
-    height: 200px;
-    border-radius: 1rem;
-    background-color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-`;

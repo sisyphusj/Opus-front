@@ -5,9 +5,11 @@ import axios from "axios";
 import styled from "styled-components";
 import api from "../api";
 import {ReactComponent as Logo} from "../assets/logo.svg";
+import {ReactComponent as SigLogo} from "../assets/sig_light.svg";
+import {ReactComponent as DarkSigLogo} from "../assets/sig_dark.svg";
 import LoadingIndicator from "../component/LoadingIndicator";
 import {useRecoilValue} from "recoil";
-import {isLoginState} from "../atom";
+import {isDarkModeState, isLoginState} from "../atom";
 
 export default function ImageGenerator() {
     const apiKey = process.env.REACT_APP_KAKAO_REST_API_KEY;
@@ -38,6 +40,7 @@ export default function ImageGenerator() {
     const [samples, setSamples] = useState(1);
     const [openArray, setOpenArray] = useState([false, false, false, false]);
     const [imageSize, setImageSize] = useState([1024, 1024]);
+    const isDarkMode = useRecoilValue(isDarkModeState);
 
     const saveImage = async () => {
 
@@ -47,7 +50,7 @@ export default function ImageGenerator() {
             width: imageSize[0],
             height: imageSize[1],
             seed: imageItem[currentImg].seed,
-            nTag : searchNegativeValue,
+            nTag: searchNegativeValue,
         });
 
         console.log(data);
@@ -145,10 +148,6 @@ export default function ImageGenerator() {
         }
 
     }, []);
-
-    useEffect(() => {
-        console.log(seed);
-    }, [seed]);
 
     return (
         <Flex direction={mainDirection} justifyContent={"center"}>
@@ -278,7 +277,8 @@ export default function ImageGenerator() {
                         <Flex direction={"row"} justifyContent={"center"} alignItems={"center"}>
                             {imageItem.map((imageItem, index) => (
                                 <Box key={imageItem.id} marginEnd={4} onMouseDown={() => setCurrentImg(index)}>
-                                    <ImageContainer src={imageItem.image} alt={imageItem.seed} style={{width : "170px"}}/>
+                                    <ImageContainer src={imageItem.image} alt={imageItem.seed}
+                                                    style={{width: "170px"}}/>
                                 </Box>
                             ))
                             }
@@ -290,8 +290,9 @@ export default function ImageGenerator() {
             <Flex justifyContent={"center"}>
                 <Box margin={10} width={700} height={700} borderStyle={"shadow"}>
                     {!loading && !imgLoad &&
-                        <Flex justifyContent={"center"} alignItems={"center"} width={"100%"} height={700}>
+                        <Flex direction={"column"} justifyContent={"center"} alignItems={"center"} width={"100%"} height={700}>
                             <DefaultLogo/>
+                            {isDarkMode ? <CustomDarkSig/> : <CustomSig/>}
                         </Flex>}
 
                     {loading && !imgLoad &&
@@ -325,15 +326,26 @@ const DefaultLogo = styled(Logo)`
     opacity: 0.8;
 `;
 
+const CustomSig = styled(SigLogo)`
+    width: 200px;
+    height: 70px;
+`;
+
+const CustomDarkSig = styled(DarkSigLogo)`
+    width: 200px;
+    height: 70px;
+`;
+
 const CustomLoadingIndicator = styled(LoadingIndicator)`
     width: 200px;
     height: 200px;
 `;
 
 const ImageContainer = styled.img`
-    width : 170px;
+    width: 170px;
+
     &:hover {
         opacity: 0.7;
     }
-    
+
 `;

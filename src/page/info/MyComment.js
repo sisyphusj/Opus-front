@@ -1,22 +1,28 @@
+import React, {Fragment, useEffect, useState} from "react";
+import {useRecoilState, useRecoilValue} from 'recoil';
+import {currentPinState, isDarkModeState, pinModalOpenState} from "../../atom";
+import {
+    TableCell,
+    TableRow,
+    Box,
+    Collapse,
+    IconButton,
+    Table,
+    TableBody,
+    TableContainer,
+    TableHead,
+    Typography,
+    Paper, Avatar
+} from "@mui/material";
+import {KeyboardArrowDown as KeyboardArrowDownIcon, KeyboardArrowUp as KeyboardArrowUpIcon} from '@mui/icons-material';
+import {Flex, Heading, Sticky} from "gestalt";
 import api from "../../api";
-import {Fragment, useEffect, useState} from "react";
-import {TableCell, TableRow} from "@mui/material";
-import Box from '@mui/material/Box';
-import Collapse from '@mui/material/Collapse';
-import IconButton from '@mui/material/IconButton';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import {Heading, Sticky} from "gestalt";
-
+import styled from "styled-components";
 
 export default function MyComment() {
     const [commentData, setCommentData] = useState([]);
+    const isDarkMode = useRecoilValue(isDarkModeState);
+    const [pinOpen, setPinOpen] = useRecoilState(pinModalOpenState);
 
     const getCommentData = async () => {
         try {
@@ -26,34 +32,64 @@ export default function MyComment() {
         } catch (error) {
             console.error(error);
         }
-    }
+    };
 
     useEffect(() => {
         getCommentData();
     }, []);
 
-
     const BaseRow = ({data}) => {
         const [open, setOpen] = useState(false);
+        const [currentPin, setCurrentPin] = useRecoilState(currentPinState);
+
+        const getPinByPId = async (pid) => {
+            try {
+                const response = await api.get(`/pin/${pid}`);
+                setCurrentPin(response.data);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        const handlePinOpen = () => {
+
+            setPinOpen(true);
+        }
+
+        useEffect(() => {
+            getPinByPId(data.pid);
+        }, [])
+
+        useEffect(() => {
+            console.log(isDarkMode);
+        }, [isDarkMode]);
 
         return (
             <Fragment>
-                <TableRow sx={{'& > *': {borderBottom: 'unset'}}}>
+                <TableRow sx={{'& > *': {borderBottom: 'unset', color: isDarkMode ? '#fff' : '#000'}}}>
                     <TableCell>
                         <IconButton
                             aria-label="expand row"
                             size="small"
                             onClick={() => setOpen(!open)}
+                            color={isDarkMode ? 'inherit' : 'default'}
+                            style={{color: '#ff9472'}}
                         >
-                            {open ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
+                            {open ? <KeyboardAgrrowUpIcon/> : <KeyboardArrowDownIcon/>}
                         </IconButton>
                     </TableCell>
-
-                    <TableCell component="th" scope="row">
-                        {data.nick}
+                    <TableCell sx={{color: isDarkMode ? '#fff' : '#000'}} component="th" scope="row" align="left">
+                        {data.pid}
                     </TableCell>
-                    <TableCell align="right">{data.content}</TableCell>
-                    <TableCell align="right">{data.updatedDate}</TableCell>
+                    <TableCell align="left"
+                               sx={{
+                                   maxWidth: '200px',
+                                   whiteSpace: 'nowrap',
+                                   overflow: 'hidden',
+                                   textOverflow: 'ellipsis',
+                                   color: isDarkMode ? '#fff' : '#000'
+                               }}>{data.content}</TableCell>
+                    <TableCell sx={{color: isDarkMode ? '#fff' : '#000'}} align="left">{data.updatedDate}</TableCell>
                 </TableRow>
 
                 <TableRow>
@@ -61,35 +97,73 @@ export default function MyComment() {
                         <Collapse in={open} timeout="auto" unmountOnExit>
                             <Box sx={{margin: 1}}>
                                 <Typography variant="h6" gutterBottom component="div">
-                                    History
+                                    <Flex justifyContent={"between"}>
+                                        <Flex>
+                                            <Avatar src={currentPin.imagePath} alt={data.pid} sx={{
+                                                width: 100, height: 'auto',
+                                                ":hover": {
+                                                    cursor: "pointer",
+                                                    transform: "scale(1.04)",
+                                                    transition: "transform 0.3s ease"
+                                                }
+
+                                            }} onClick={() => handlePinOpen()}/>
+                                            <Box sx={{color: isDarkMode ? '#fff' : '#000'}} marginLeft={2}
+                                                 fontSize={"15px"} maxWidth={"400px"}>
+                                                <Flex>
+                                                    <div style={{fontSize: "20px", color: "#f2709c"}}>{
+                                                        data.nick}</div>
+                                                    <div style={{fontSize: "20px"}}> 의 핀</div>
+                                                </Flex>
+                                                {data.content}
+                                            </Box>
+                                        </Flex>
+                                    </Flex>
                                 </Typography>
                                 <Table size="small" aria-label="purchases">
-                                    sample
+                                    <TableBody>
+
+                                    </TableBody>
                                 </Table>
                             </Box>
                         </Collapse>
                     </TableCell>
                 </TableRow>
             </Fragment>
-        );
-    }
+        )
+            ;
+    };
 
     return (
-        <Box minHeight={"calc(100vh - 154px)"}>
+        <Box minHeight={"calc(100vh - 154px)"} sx={{color: isDarkMode ? '#fff' : '#000'}}>
             <Sticky top={0}>
                 <Box marginBottom={6}>
-                    <Heading> 나의 댓글 </Heading>
+                    <Heading>나의 댓글</Heading>
                 </Box>
             </Sticky>
 
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} sx={{backgroundColor: isDarkMode ? '#111111' : '#fff'}}>
                 <Table aria-label="collapsible table">
                     <TableHead>
                         <TableRow>
-                            <TableCell/>
-                            <TableCell>Nickname</TableCell>
-                            <TableCell> Content</TableCell>
-                            <TableCell> Date</TableCell>
+                            <TableCell sx={{
+                                borderBottom: isDarkMode ? '1px solid #CDCDCD' : '1px solid #E9E9E9'
+                            }}/>
+                            <TableCell sx={{
+                                fontSize : "20px",
+                                color: isDarkMode ? '#fff' : '#111111',
+                                borderBottom: isDarkMode ? '1px solid #CDCDCD' : '1px solid #E9E9E9'
+                            }}>Pin</TableCell>
+                            <TableCell sx={{
+                                fontSize : "20px",
+                                color: isDarkMode ? '#fff' : '#111111',
+                                borderBottom: isDarkMode ? '1px solid #CDCDCD' : '1px solid #E9E9E9',
+                            }}>Content</TableCell>
+                            <TableCell sx={{
+                                fontSize : "20px",
+                                color: isDarkMode ? '#fff' : '#111111',
+                                borderBottom: isDarkMode ? '1px solid #CDCDCD' : '1px solid #E9E9E9'
+                            }}>Date</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>

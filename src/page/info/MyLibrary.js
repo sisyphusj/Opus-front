@@ -1,5 +1,4 @@
-import LoadingIndicator from "../../component/LoadingIndicator";
-import {Box, Flex, Heading, Masonry, Sticky} from "gestalt";
+import {Box, Masonry} from "gestalt";
 import React, {useEffect, useRef, useState} from "react";
 import GridComponent from "../../component/GridComponent";
 import api from "../../api";

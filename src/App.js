@@ -1,5 +1,5 @@
 import {useRecoilValue} from "recoil";
-import {isDarkMode, pinModalOpenState} from "./atom";
+import {isDarkModeState, pinModalOpenState} from "./atom";
 import Home from "./page/Home";
 import Setting from "./page/info/Setting";
 import ImageGenerator from "./page/ImageGenerator";
@@ -10,10 +10,11 @@ import MyProfile from "./page/info/MyProfile";
 import MyLibrary from "./page/info/MyLibrary";
 import PinModal from "./component/PinModal";
 import MyComment from "./page/info/MyComment";
+import CustomSnackbar from "./component/CustomSnackbar";
 
 function App() {
 
-    const mode = useRecoilValue(isDarkMode);
+    const mode = useRecoilValue(isDarkModeState);
     const isPinOpen = useRecoilValue(pinModalOpenState);
 
     return (
@@ -31,6 +32,7 @@ function App() {
                         </Route>
                     </Routes>
                     {isPinOpen && <PinModal/>}
+                    <CustomSnackbar />
                 </Box>
             </ColorSchemeProvider>
         </BrowserRouter>

@@ -1,6 +1,5 @@
 import {useRecoilValue} from "recoil";
 import {isDarkModeState, pinModalOpenState} from "./atom";
-import Home from "./page/Home";
 import Setting from "./page/info/Setting";
 import ImageGenerator from "./page/ImageGenerator";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
@@ -11,6 +10,7 @@ import MyLibrary from "./page/info/MyLibrary";
 import PinModal from "./component/PinModal";
 import MyComment from "./page/info/MyComment";
 import CustomSnackbar from "./component/CustomSnackbar";
+import Feed from "./page/Feed";
 
 function App() {
 
@@ -23,7 +23,7 @@ function App() {
                 <Box fit color="default" minWidth={575}>
                     <Header/>
                     <Routes>
-                        <Route path="/" element={<Home/>}/>
+                        <Route path="/" element={<Feed />}/>
                         <Route path="/image-generator" element={<ImageGenerator/>}/>
                         <Route path="/settings" element={<Setting/>}>
                             <Route path="profile" element={<MyProfile/>}/>

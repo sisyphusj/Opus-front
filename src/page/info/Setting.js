@@ -3,6 +3,8 @@ import {useEffect, useLayoutEffect, useRef, useState} from "react";
 import MyProfile from "./MyProfile";
 import MyLibrary from "./MyLibrary";
 import {Outlet, useNavigate} from "react-router-dom";
+import {isLoginState, snackMessageState, snackOpenState, snackTypeState} from "../../atom";
+import {useRecoilState, useRecoilValue} from "recoil";
 
 
 export default function Setting() {
@@ -12,6 +14,18 @@ export default function Setting() {
     const tabRef2 = useRef(null);
     const tabRef3 = useRef(null);
     const customZIndex = new FixedZIndex(1);
+    const isLogin = useRecoilValue(isLoginState);
+
+    const [snackbarOpen, setSnackbarOpen] = useRecoilState(snackOpenState);
+    const [snackbarMessage, setSnackbarMessage] = useRecoilState(snackMessageState);
+    const [snackbarType, setSnackbarType] = useRecoilState(snackTypeState);
+
+    const handleSnackBar = (type, msg) => {
+        setSnackbarType(type);
+        setSnackbarMessage(msg);
+        setSnackbarOpen(true);
+    }
+
 
     useLayoutEffect(() => {
         tabRef1.current.querySelector('.tBJ').style.fontSize = "18px";
@@ -35,6 +49,12 @@ export default function Setting() {
     };
 
     useEffect(() => {
+
+        if (!isLogin) {
+            handleSnackBar('warning', '로그인 후 이용해주세요.');
+            return (navigate('/'));
+        }
+
         if (window.location.pathname === "/settings/profile") {
             setActiveIndex(0);
         } else if (window.location.pathname === "/settings/library") {

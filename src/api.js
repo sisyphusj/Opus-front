@@ -56,9 +56,9 @@ api.interceptors.response.use(
                 }
             } catch (e) {
                 console.log(e);
-                window.alert("Error: " + e.message);
+                alert("인증에 실패하였습니다 다시 로그인해 주십시오.");
+                window.location.href = "/";
             }
-
             return Promise.reject(error);
         }
         return Promise.reject(error);

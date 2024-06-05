@@ -2,6 +2,9 @@ import {Box, Masonry} from "gestalt";
 import React, {useEffect, useRef, useState} from "react";
 import GridComponent from "../../component/GridComponent";
 import api from "../../api";
+import {useRecoilState, useRecoilValue} from "recoil";
+import {isLoginState, snackMessageState, snackOpenState, snackTypeState} from "../../atom";
+import {useNavigate} from "react-router-dom";
 
 export default function MyLibrary() {
     const [pins, setPins] = useState([]);
@@ -9,6 +12,18 @@ export default function MyLibrary() {
     const [total, setTotal] = useState(100);
     const scrollContainerRef = useRef();
     const gridRef = useRef();
+    const isLogin = useRecoilValue(isLoginState);
+    const navigate = useNavigate();
+
+    const [snackbarOpen, setSnackbarOpen] = useRecoilState(snackOpenState);
+    const [snackbarMessage, setSnackbarMessage] = useRecoilState(snackMessageState);
+    const [snackbarType, setSnackbarType] = useRecoilState(snackTypeState);
+
+    const handleSnackBar = (type, msg) => {
+        setSnackbarType(type);
+        setSnackbarMessage(msg);
+        setSnackbarOpen(true);
+    }
 
     const getPins = async (n) => {
         try {
@@ -16,14 +31,22 @@ export default function MyLibrary() {
                 amount: 4,
                 offset: n.from
             })
-            // console.log(response.data);
+
             return Promise.resolve(response.data);
         } catch (error) {
             console.error(error);
+            handleSnackBar('error', '핀을 불러오는데 실패했습니다.');
+            return Promise.resolve([]);
         }
     }
 
     useEffect(() => {
+
+        if (!isLogin) {
+            handleSnackBar('warning', '로그인 후 이용해주세요.');
+            return (navigate('/'));
+        }
+
         getPins({from: 0}).then((newPins) => {
             setPins(newPins);
         });

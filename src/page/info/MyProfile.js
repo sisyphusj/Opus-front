@@ -6,7 +6,7 @@ import LoadingIndicator from "../../component/LoadingIndicator";
 import {Background, CustomButton} from "../../component/CommonModal";
 import {removeCookieToken} from "../../Cookies";
 import {useRecoilState} from "recoil";
-import {isLoginState} from "../../atom";
+import {isLoginState, snackMessageState, snackOpenState, snackTypeState} from "../../atom";
 import {useNavigate} from "react-router-dom";
 
 export default function MyProfile() {
@@ -30,44 +30,52 @@ export default function MyProfile() {
     const [nickname, setNickname] = useState('');
     const [email, setEmail] = useState('');
 
-    const getProfile = () => {
+    const [snackbarOpen, setSnackbarOpen] = useRecoilState(snackOpenState);
+    const [snackbarMessage, setSnackbarMessage] = useRecoilState(snackMessageState);
+    const [snackbarType, setSnackbarType] = useRecoilState(snackTypeState);
+
+    const handleSnackBar = (type, msg) => {
+        setSnackbarType(type);
+        setSnackbarMessage(msg);
+        setSnackbarOpen(true);
+    }
+
+    const getProfile = async () => {
         try {
-            const response = api.get('/member/profile');
+            const response = await api.get('/member/profile');
 
-            console.log(response);
-
-            response.then((res) => {
-                setId(res.data.id);
-                setNickname(res.data.nick);
-                setEmail(res.data.email);
-                setOldPassword(res.data.pw)
-            });
-            console.log(oldPassword);
+            setId(response.data.id);
+            setNickname(response.data.nick);
+            setEmail(response.data.email);
+            setOldPassword(response.data.pw)
         } catch (e) {
             console.log(e);
+            handleSnackBar('error', '프로필을 불러오는데 실패했습니다.')
         }
     }
 
-    // 이거 수정 필요 pw 부분
-    const submitProfile = () => {
+    const submitProfile = async () => {
 
-        console.log(oldPassword);
+        if(id.trim() === '' || password.trim() === '' || nickname.trim() === '' || email.trim() === '') {
+            handleSnackBar('error', '입력값을 확인하세요');
+            return;
+        }
 
         try {
-            const response = api.put('/member', {
+            await api.put('/member', {
                 id: id,
-                pw: changePw? newPassword : oldPassword,
+                pw: changePw ? newPassword : oldPassword,
                 nick: nickname,
                 email: email,
             });
 
-            response.then((res) => {
-                if(res.status === 200) {
-                    setIsSave(false);
-                }
-            });
+            setIsSave(false);
+            handleSnackBar('success', '프로필이 성공적으로 저장되었습니다.')
+
+
         } catch (e) {
             console.log(e);
+            handleSnackBar('error', '프로필을 저장하는데 실패했습니다.')
         }
     }
 
@@ -75,15 +83,19 @@ export default function MyProfile() {
 
         try {
             const response = await api.delete('/member');
-            if(response.status === 200) {
+            if (response.status === 200) {
                 sessionStorage.removeItem('accessToken');
                 removeCookieToken();
+
+                handleSnackBar('success', '회원 탈퇴가 완료되었습니다.')
+
                 setIsLogin(false);
                 navigate('/');
                 window.location.reload();
             }
         } catch (e) {
             console.log(e);
+            handleSnackBar('error', '회원 탈퇴에 실패했습니다.')
         }
 
         setIsDelete(false);
@@ -107,6 +119,12 @@ export default function MyProfile() {
     }
 
     useEffect(() => {
+
+        if(!isLogin) {
+            handleSnackBar('warning', '로그인 후 이용해주세요.');
+            return(navigate('/'));
+        }
+
         getProfile();
     }, []);
 
@@ -127,8 +145,7 @@ export default function MyProfile() {
                     <Flex justifyContent={"between"}>
                         <Box minWidth={300}>
                             <TextField id={"userPw"} type={"password"} size={"lg"}
-                                       onChange={(e) => setPassword(e.value)} value={password || ""} label={"비밀번호"}
-
+                                       onChange={(e) => setPassword(e.value)} value={password || ""} label={"새로운 비밀번호"}
                                        ref={pwFieldRef}
                                        onFocus={() => handleFieldBorder(pwFieldRef, true)}
                                        onBlur={() => handleFieldBorder(pwFieldRef, false)}
@@ -228,7 +245,7 @@ const DeleteButton = styled(CustomButton)`
     width: 150px;
     border: 1px solid #F2709C;
     color: #F2709C;
-    
+
     &:hover {
         background: #F2709C;
         color: white;

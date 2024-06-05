@@ -1,6 +1,13 @@
 import React, {Fragment, useEffect, useState} from "react";
 import {useRecoilState, useRecoilValue} from 'recoil';
-import {currentPinState, isDarkModeState, pinModalOpenState} from "../../atom";
+import {
+    currentPinState,
+    isDarkModeState, isLoginState,
+    pinModalOpenState,
+    snackMessageState,
+    snackOpenState,
+    snackTypeState
+} from "../../atom";
 import {
     TableCell,
     TableRow,
@@ -17,12 +24,24 @@ import {
 import {KeyboardArrowDown as KeyboardArrowDownIcon, KeyboardArrowUp as KeyboardArrowUpIcon} from '@mui/icons-material';
 import {Flex, Heading, Sticky} from "gestalt";
 import api from "../../api";
-import styled from "styled-components";
+import {useNavigate} from "react-router-dom";
 
 export default function MyComment() {
+    const navigate = useNavigate();
     const [commentData, setCommentData] = useState([]);
     const isDarkMode = useRecoilValue(isDarkModeState);
     const [pinOpen, setPinOpen] = useRecoilState(pinModalOpenState);
+    const isLogin = useRecoilValue(isLoginState);
+
+    const [snackbarOpen, setSnackbarOpen] = useRecoilState(snackOpenState);
+    const [snackbarMessage, setSnackbarMessage] = useRecoilState(snackMessageState);
+    const [snackbarType, setSnackbarType] = useRecoilState(snackTypeState);
+
+    const handleSnackBar = (type, msg) => {
+        setSnackbarType(type);
+        setSnackbarMessage(msg);
+        setSnackbarOpen(true);
+    }
 
     const getCommentData = async () => {
         try {
@@ -31,6 +50,8 @@ export default function MyComment() {
             setCommentData(response.data);
         } catch (error) {
             console.error(error);
+            handleSnackBar('error', '댓글을 불러오는데 실패했습니다.');
+
         }
     };
 
@@ -48,21 +69,21 @@ export default function MyComment() {
                 setCurrentPin(response.data);
             } catch (error) {
                 console.error(error);
+                handleSnackBar('error', '핀을 불러오는데 실패했습니다.');
             }
         };
 
         const handlePinOpen = () => {
-
             setPinOpen(true);
         }
 
         useEffect(() => {
+            if (!isLogin) {
+                handleSnackBar('warning', '로그인 후 이용해주세요.');
+                return (navigate('/'));
+            }
             getPinByPId(data.pid);
         }, [])
-
-        useEffect(() => {
-            console.log(isDarkMode);
-        }, [isDarkMode]);
 
         return (
             <Fragment>
@@ -75,7 +96,7 @@ export default function MyComment() {
                             color={isDarkMode ? 'inherit' : 'default'}
                             style={{color: '#ff9472'}}
                         >
-                            {open ? <KeyboardAgrrowUpIcon/> : <KeyboardArrowDownIcon/>}
+                            {open ? <KeyboardArrowUpIcon/> : <KeyboardArrowDownIcon/>}
                         </IconButton>
                     </TableCell>
                     <TableCell sx={{color: isDarkMode ? '#fff' : '#000'}} component="th" scope="row" align="left">
@@ -150,17 +171,17 @@ export default function MyComment() {
                                 borderBottom: isDarkMode ? '1px solid #CDCDCD' : '1px solid #E9E9E9'
                             }}/>
                             <TableCell sx={{
-                                fontSize : "20px",
+                                fontSize: "20px",
                                 color: isDarkMode ? '#fff' : '#111111',
                                 borderBottom: isDarkMode ? '1px solid #CDCDCD' : '1px solid #E9E9E9'
                             }}>Pin</TableCell>
                             <TableCell sx={{
-                                fontSize : "20px",
+                                fontSize: "20px",
                                 color: isDarkMode ? '#fff' : '#111111',
                                 borderBottom: isDarkMode ? '1px solid #CDCDCD' : '1px solid #E9E9E9',
                             }}>Content</TableCell>
                             <TableCell sx={{
-                                fontSize : "20px",
+                                fontSize: "20px",
                                 color: isDarkMode ? '#fff' : '#111111',
                                 borderBottom: isDarkMode ? '1px solid #CDCDCD' : '1px solid #E9E9E9'
                             }}>Date</TableCell>

@@ -3,7 +3,14 @@ import {Box, Flex, IconButton, SearchField, Button, Sticky, FixedZIndex} from 'g
 import {ReactComponent as LightLogo} from "../assets/lightlogo.svg";
 import {ReactComponent as DarkLogo} from "../assets/darklogo.svg";
 import {NavLink, useNavigate} from "react-router-dom";
-import {isDarkMode, isLoginState, searchKeywordState} from "../atom";
+import {
+    isDarkModeState,
+    isLoginState,
+    searchKeywordState,
+    snackMessageState,
+    snackOpenState,
+    snackTypeState
+} from "../atom";
 import {useRecoilState} from "recoil";
 import LoginModal from "./LoginModal";
 
@@ -11,13 +18,28 @@ export default function Header() {
     const navigate = useNavigate();
     const [searchValue, setSearchValue] = useState('');
     const SearchFieldRef = useRef(null);
-    const [turnDarkMode, setTurnDarkMode] = useRecoilState(isDarkMode);
+    const [turnDarkMode, setTurnDarkMode] = useRecoilState(isDarkModeState);
     const customZIndex = new FixedZIndex(999);
     const [isLogin, setIsLogin] = useRecoilState(isLoginState);
     const [keyword, setKeyword] = useRecoilState(searchKeywordState);
 
+    const [snackbarOpen, setSnackbarOpen] = useRecoilState(snackOpenState);
+    const [snackbarMessage, setSnackbarMessage] = useRecoilState(snackMessageState);
+    const [snackbarType, setSnackbarType] = useRecoilState(snackTypeState);
+
+    const handleSnackBar = (type, msg) => {
+        setSnackbarType(type);
+        setSnackbarMessage(msg);
+        setSnackbarOpen(true);
+    }
+
+
     function handleEditButton() {
-        navigate("/image-generator");
+        if (isLogin)
+            navigate("/image-generator");
+        else {
+            handleSnackBar('warning', '로그인 후 이용해주세요.');
+        }
     }
 
     const handleTextFieldShadow = (boolean) => {
@@ -41,7 +63,7 @@ export default function Header() {
         if (isLogin)
             navigate("/settings/profile");
         else {
-            console.log("로그인이 필요합니다.");
+            handleSnackBar('warning', '로그인 후 이용해주세요.');
         }
     }
 

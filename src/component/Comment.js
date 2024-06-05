@@ -8,7 +8,14 @@ import styled from "styled-components";
 import {Close} from "@mui/icons-material";
 import api from "../api";
 import {useRecoilState, useRecoilValue} from "recoil";
-import {commentListState, currentPinState, currentReplyState, isLoginState, isReplyOpenState} from "../atom";
+import {
+    commentListState,
+    currentPinState,
+    currentReplyState,
+    isLoginState,
+    isReplyOpenState, snackMessageState,
+    snackOpenState, snackTypeState
+} from "../atom";
 import Popper from "@mui/material/Popper";
 import Grow from "@mui/material/Grow";
 import Paper from "@mui/material/Paper";
@@ -56,14 +63,22 @@ const Comment = React.memo(({comment, comments}) => {
     const [currentDate, setCurrentDate] = useState('');
     const inputRef = useRef(null);
     const [showAllReplies, setShowAllReplies] = useState(false);
+    const [snackbarOpen, setSnackbarOpen] = useRecoilState(snackOpenState);
+    const [snackbarMessage, setSnackbarMessage] = useRecoilState(snackMessageState);
+    const [snackbarType, setSnackbarType] = useRecoilState(snackTypeState);
+
+    const handleSnackBar = (type, msg) => {
+        setSnackbarType(type);
+        setSnackbarMessage(msg);
+        setSnackbarOpen(true);
+    }
 
     const getCommentData = async () => {
-
         try {
             const response = await api.get(`/comment/list/${pinData.pid}`);
-            console.log(response.data);
             setCommentList(response.data);
         } catch (e) {
+            handleSnackBar('error', '댓글을 불러오는 중 오류가 발생했습니다.');
             console.error(e);
         }
     };
@@ -106,12 +121,17 @@ const Comment = React.memo(({comment, comments}) => {
     const submitReply = async () => {
 
         if (!isLogin) {
-            alert("로그인이 필요합니다.");
+            handleSnackBar( "warning","로그인이 필요합니다.");
+            return;
+        }
+
+        if(reply.trim() === '') {
+            handleSnackBar('warning', '댓글을 입력해주세요.');
             return;
         }
 
         try {
-            const response = await api.post('/comment/add', {
+            await api.post('/comment/add', {
                 pId: comment.pid,
                 topLevelCommentId: comment.level === 0 ? comment.cid : comment.topLevelCommentId,
                 content: reply,
@@ -119,37 +139,44 @@ const Comment = React.memo(({comment, comments}) => {
                 parentNick: comment.nick,
             });
 
-            console.log(response);
             setReply('');
             await getCommentData();
+
+            handleSnackBar('success', '댓글이 작성되었습니다.');
+
             setIsReplyOpen(false);
             setCurrentCommentId(null);
 
         } catch (e) {
             console.error(e);
+            handleSnackBar('error', '댓글을 작성하는 중 오류가 발생했습니다.');
         }
     }
 
     const updateComment = async () => {
 
-        console.log(comment.cid);
+        if(reply.trim() === '') {
+            handleSnackBar('warning', '댓글을 입력해주세요.');
+            return;
+        }
 
         try {
-            const response = await api.post('/comment/update', {
+            await api.post('/comment/update', {
                 cId: comment.cid,
                 pId: comment.pid,
                 level: comment.level,
                 content: reply,
             });
 
-            console.log(response);
             setReply('');
+            handleSnackBar('success', '댓글이 수정되었습니다.');
             await getCommentData();
             setIsReplyOpen(false);
             setCurrentCommentId(null);
 
         } catch (e) {
             console.log(e);
+            handleSnackBar('error', '댓글을 수정하는 중 오류가 발생했습니다.');
         }
         setOpen(false);
     }
@@ -157,13 +184,14 @@ const Comment = React.memo(({comment, comments}) => {
     const deleteComment = async () => {
 
         try {
-            const response = await api.delete(`comment/delete/${comment.cid}`);
+            await api.delete(`comment/delete/${comment.cid}`);
 
-            console.log(response);
+            handleSnackBar('success', '댓글이 삭제되었습니다.');
             await getCommentData();
             setCurrentCommentId(null);
         } catch (e) {
             console.log(e);
+            handleSnackBar('error', '댓글을 삭제하는 중 오류가 발생했습니다.');
         }
         setOpen(false);
     }

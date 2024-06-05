@@ -1,7 +1,6 @@
 import {Box,  Flex, Image, Mask} from "gestalt";
 import {useState} from "react";
 import styled from "styled-components";
-import {useNavigate} from "react-router-dom";
 import {useRecoilState} from "recoil";
 import {currentPinState, pinModalOpenState} from "../atom";
 
@@ -38,7 +37,7 @@ export default function GridComponent({data}) {
                             </Box>
                         </Image>
                     </Main>
-                    {hover ? <CustomButton> 저장 </CustomButton> : null}
+                    {/*{hover ? <CustomButton> 저장 </CustomButton> : null}*/}
                 </Box>
             </Mask>
         </Flex>

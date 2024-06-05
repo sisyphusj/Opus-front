@@ -1,8 +1,7 @@
-import {Snackbar} from "@mui/joy";
-import {Button} from "@mui/material";
-import PlaylistAddCheckCircleRoundedIcon from '@mui/icons-material/PlaylistAddCheckCircleRounded';
+import {Alert} from "@mui/material";
 import {useRecoilState, useRecoilValue} from "recoil";
 import {snackMessageState, snackOpenState, snackTypeState} from "../atom";
+import Snackbar from "@mui/material/Snackbar";
 
 export default function CustomSnackbar() {
     const [open, setOpen] = useRecoilState(snackOpenState);
@@ -10,30 +9,26 @@ export default function CustomSnackbar() {
     const snackbarType = useRecoilValue(snackTypeState);
 
     /**
-     *   type : 'danger', 'neutral', 'primary', 'success', 'warning'
+     *   type : 'success', 'info', 'warning', 'error'
      */
 
     console.log(snackbarType);
 
     return (
         <Snackbar
-            variant="soft"
             open={open}
-            color={snackbarType}
-            anchorOrigin={{vertical: 'top', horizontal: 'right'}}
-            startDecorator={<PlaylistAddCheckCircleRoundedIcon/>}
-            endDecorator={
-                <Button
-                    onClick={() => setOpen(false)}
-                    size="sm"
-                    variant="soft"
-                    color="success"
-                >
-                    Dismiss
-                </Button>
-            }
+            anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
+            autoHideDuration={3000}
+            onClose={() => setOpen(false)}
         >
-            {snackbarMessage}
+            <Alert
+                onClose={() => setOpen(false)}
+                severity={snackbarType}
+                variant={'filled'}
+                sx={{width: '100%'}}
+            >
+                {snackbarMessage}
+            </Alert>
         </Snackbar>
     );
 }

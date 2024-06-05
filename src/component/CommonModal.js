@@ -13,12 +13,6 @@ const CustomModal = ({isOpen, handleModal, type, children}) => {
     const [w, setW] = useState("1200px");
     const [h, setH] = useState("700px");
 
-    const handleOverlayClick = (e) => {
-        if (modalRef.current && !modalRef.current.contains(e.target)) {
-            handleModal(false);
-        }
-    };
-
     useLayoutEffect(() => {
         function updateDirection() {
             setW(window.innerWidth > 1300 ? "1200px" : '65vw');
@@ -57,7 +51,7 @@ const CustomModal = ({isOpen, handleModal, type, children}) => {
     return (
         <>
             {isOpen && (
-                <Background onClick={(e) => handleOverlayClick(e)}>
+                <Background>
                     <Mask rounding={8}>
                     {type === 'md'
                         ? (<Main ref={modalRef}>
@@ -169,13 +163,20 @@ export const CustomInput = styled(TextField)({
             borderColor: '#F2709C',
         },
     },
+    '& .MuiFormHelperText-root': {
+        color: '#B2BAC2',
+        '&.Mui-error': {
+            color: '#F2709C',
+        },
+    },
+
+    backgroundColor: 'white',
 });
 
 export const CustomButton = styled.button`
     width: 250px;
     height: 50px;
     padding: 8px 16px;
-    border: none;
     background-color: transparent;
     border-radius: 1.5rem;
     color: #ff9472;

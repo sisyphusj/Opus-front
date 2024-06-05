@@ -1,11 +1,6 @@
 import { atom } from "recoil";
 import {recoilPersist} from "recoil-persist";
 
-export const isDarkMode = atom({
-    key: "isDarkMode",
-    default: false
-});
-
 const {persistAtom}  = recoilPersist({
     key: 'recoil-persist',
     storage: sessionStorage,
@@ -13,6 +8,12 @@ const {persistAtom}  = recoilPersist({
 
 export const isLoginState = atom({
     key: "isLoginState",
+    default: false,
+    effects_UNSTABLE: [persistAtom],
+});
+
+export const isDarkModeState = atom({
+    key: "isDarkModeState",
     default: false,
     effects_UNSTABLE: [persistAtom],
 });
@@ -51,6 +52,23 @@ export const searchKeywordState = atom({
     key: "searchKeywordState",
     default: null,
 });
+
+export const snackOpenState = atom({
+    key: "snackOpenState",
+    default: false,
+});
+
+export const snackMessageState = atom({
+    key: "snackMessageState",
+    default: '',
+});
+
+export const snackTypeState = atom({
+    key: "snackTypeState",
+    default: 'success',
+});
+
+
 
 
 

@@ -22,7 +22,6 @@ const SignupModal = () => {
     const [snackbarOpen, setSnackbarOpen] = useRecoilState(snackOpenState);
     const [snackbarMessage, setSnackbarMessage] = useRecoilState(snackMessageState);
     const [snackbarType, setSnackbarType] = useRecoilState(snackTypeState);
-    const [buttonActive, setButtonActive] = useState(false);
 
     const handleModal = (bool) => {
         setIsOpen(bool);
@@ -43,9 +42,7 @@ const SignupModal = () => {
 
     const getSignUp = async () => {
 
-        console.log(buttonActive);
-
-        if(!buttonActive) {
+        if (idError || nickError || emailError || !emailValid || id.trim() === '' || nickname.trim() === '' || email.trim() === '') {
             handleSnackBar('warning', '입력값을 확인해주세요.');
             return;
         }
@@ -57,19 +54,17 @@ const SignupModal = () => {
                 nick: nickname,
                 email: email,
             });
-            console.log(response);
 
             if (response.status === 200) {
+                handleSnackBar('success', '회원가입이 완료되었습니다.');
                 handleModal(false);
             }
         } catch (e) {
             console.error(e);
         }
-    };
+    }
 
     const checkDuplicatedId = async () => {
-
-        console.log(id);
 
         if (id.trim() === '') {
             setIdError(false);
@@ -86,7 +81,7 @@ const SignupModal = () => {
                 setIdError(true);
             } else {
                 console.log(e.response);
-                handleSnackBar('danger', '서버에 문제가 생겼습니다. 다시 시도해주세요.');
+                handleSnackBar('error', '서버에 문제가 생겼습니다. 다시 시도해주세요.');
             }
         }
     }
@@ -108,7 +103,7 @@ const SignupModal = () => {
                 setNickError(true);
             } else {
                 console.log(e.response);
-                handleSnackBar('danger', '서버에 문제가 생겼습니다. 다시 시도해주세요.');
+                handleSnackBar('error', '서버에 문제가 생겼습니다. 다시 시도해주세요.');
             }
         }
     }
@@ -137,7 +132,7 @@ const SignupModal = () => {
                 setEmailError(true);
             } else {
                 console.log(e.response);
-                handleSnackBar('danger', '서버에 문제가 생겼습니다. 다시 시도해주세요.');
+                handleSnackBar('error', '서버에 문제가 생겼습니다. 다시 시도해주세요.');
             }
         }
     }
@@ -159,7 +154,6 @@ const SignupModal = () => {
 
     }
 
-
     useEffect(() => {
         handleModal(true);
         console.log(isOpen);
@@ -169,12 +163,6 @@ const SignupModal = () => {
             console.log(isOpen);
         }
     }, []);
-
-    useEffect(() => {
-        if (!idError && id.trim() !== '' && !nickError && nickname.trim() !== '' && !emailError && email.trim() !== '' && emailValid) {
-            setButtonActive(true);
-        }
-    }, [idError, nickError, emailError, emailValid]);
 
     return (
         <CustomModal isOpen={isOpen} handleModal={handleModal} type={"md"}>
@@ -248,7 +236,7 @@ const SignupModal = () => {
             <CustomButton style={{marginTop: "45px"}} onClick={() => getSignUp()}>Sign Up</CustomButton>
         </CustomModal>
     );
-};
+}
 
 const CustomLogo = styled(LightLogo)`
     width: 200px;

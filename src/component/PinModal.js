@@ -3,7 +3,14 @@ import React, {useCallback, useEffect, useLayoutEffect, useState} from "react";
 import {Box, Flex, Heading, Mask} from "gestalt";
 import {useRecoilState, useRecoilValue} from "recoil";
 import styled from "styled-components";
-import {currentPinState, pinModalOpenState, commentListState, isLoginState} from "../atom";
+import {
+    currentPinState,
+    pinModalOpenState,
+    commentListState,
+    isLoginState,
+    snackOpenState,
+    snackMessageState, snackTypeState
+} from "../atom";
 import api from "../api";
 import Comments from "./Comment";
 import {Accordion, AccordionDetails, AccordionGroup, AccordionSummary} from "@mui/joy";
@@ -24,6 +31,17 @@ export default function PinModal() {
     const [w, setW] = useState("1200px");
     const [h, setH] = useState("700px");
 
+
+    const [snackbarOpen, setSnackbarOpen] = useRecoilState(snackOpenState);
+    const [snackbarMessage, setSnackbarMessage] = useRecoilState(snackMessageState);
+    const [snackbarType, setSnackbarType] = useRecoilState(snackTypeState);
+
+    const handleSnackBar = (type, msg) => {
+        setSnackbarType(type);
+        setSnackbarMessage(msg);
+        setSnackbarOpen(true);
+    }
+
     const handelModal = (bool) => {
         setIsOpen(bool);
     }
@@ -38,26 +56,33 @@ export default function PinModal() {
         try {
             const response = await api.get(`/comment/list/${pinData.pid}`);
             setCommentList(response.data);
-            console.log(response.data);
         } catch (e) {
             console.error(e);
+            handleSnackBar('error', '핀을 불러오는데 실패했습니다.')
         }
 
     }, [pinData]);
 
     const submitComment = async () => {
 
+        if(comment.trim() === '') {
+            handleSnackBar('warning', '댓글을 입력해주세요.');
+            return;
+        }
+
         try {
-            const response = await api.post('/comment/add', {
+            await api.post('/comment/add', {
                 pId: pinData.pid,
                 topLevelCommentId: null,
                 level: 0,
                 content: comment,
             });
             setComment('');
+            handleSnackBar('success', '댓글이 등록되었습니다.');
             getPinCommentData();
         } catch (e) {
             console.error(e);
+            handleSnackBar('error', '댓글을 등록하는데 실패했습니다.');
         }
 
     }
@@ -68,7 +93,6 @@ export default function PinModal() {
 
             response.then((res) => {
                 setNickname(res.data.nick);
-                // console.log("나의 닉네임은 ", res.data.nick);
             });
         } catch (e) {
             console.log(e);

@@ -1,5 +1,5 @@
 import {useEffect, useLayoutEffect, useRef, useState} from "react";
-import {Box, Button, ButtonGroup, Column, Flex, Image, NumberField, SearchField, TextField} from "gestalt";
+import {Box, Button, ButtonGroup, Flex, Image, NumberField, SearchField, TextField} from "gestalt";
 import {Slider} from "@mui/material";
 import axios from "axios";
 import styled from "styled-components";
@@ -8,8 +8,9 @@ import {ReactComponent as Logo} from "../assets/logo.svg";
 import {ReactComponent as SigLogo} from "../assets/sig_light.svg";
 import {ReactComponent as DarkSigLogo} from "../assets/sig_dark.svg";
 import LoadingIndicator from "../component/LoadingIndicator";
-import {useRecoilValue} from "recoil";
-import {isDarkModeState, isLoginState} from "../atom";
+import {useRecoilState, useRecoilValue} from "recoil";
+import {isDarkModeState, isLoginState, snackMessageState, snackOpenState, snackTypeState} from "../atom";
+import {useNavigate} from "react-router-dom";
 
 export default function ImageGenerator() {
     const apiKey = process.env.REACT_APP_KAKAO_REST_API_KEY;
@@ -17,6 +18,7 @@ export default function ImageGenerator() {
     const [loading, setLoading] = useState(false);
     const [imgLoad, setImgLoad] = useState(false);
 
+    const navigate = useNavigate();
     const isLogin = useRecoilValue(isLoginState);
 
     const [imageItem, setImageItem] = useState([]);
@@ -42,22 +44,39 @@ export default function ImageGenerator() {
     const [imageSize, setImageSize] = useState([1024, 1024]);
     const isDarkMode = useRecoilValue(isDarkModeState);
 
-    const saveImage = async () => {
+    const [snackbarOpen, setSnackbarOpen] = useRecoilState(snackOpenState);
+    const [snackbarMessage, setSnackbarMessage] = useRecoilState(snackMessageState);
+    const [snackbarType, setSnackbarType] = useRecoilState(snackTypeState);
 
-        const data = await api.post("http://localhost:8080/pin", {
-            imagePath: imageItem[currentImg].image,
-            tag: searchValue,
-            width: imageSize[0],
-            height: imageSize[1],
-            seed: imageItem[currentImg].seed,
-            nTag: searchNegativeValue,
-        });
-
-        console.log(data);
+    const handleSnackBar = (type, msg) => {
+        setSnackbarType(type);
+        setSnackbarMessage(msg);
+        setSnackbarOpen(true);
     }
 
-    function getImages() {
-        alert("click");
+    const saveImage = async () => {
+
+        try {
+            const data = await api.post("http://localhost:8080/pin", {
+                imagePath: imageItem[currentImg].image,
+                tag: searchValue,
+                width: imageSize[0],
+                height: imageSize[1],
+                seed: imageItem[currentImg].seed,
+                nTag: searchNegativeValue,
+            });
+
+            console.log(data);
+            handleSnackBar('success', '이미지가 저장되었습니다.');
+
+        } catch (e) {
+            console.log(e);
+            handleSnackBar('error', '이미지를 저장하는데 실패했습니다.');
+        }
+
+    }
+
+    const getImages = async () => {
         setImgLoad(false);
         setLoading(true);
         setCurrentImg(0);
@@ -73,32 +92,28 @@ export default function ImageGenerator() {
             guidance_scale: guidanceScale,
             samples: samples
         }
-
-        const data = axios.post("https://api.kakaobrain.com/v2/inference/karlo/t2i",
-            JSON.stringify(settings)
-            , {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'KakaoAK ' + apiKey,
-                },
-            });
-
-        console.log(data);
-
         try {
-            data.then((res) => {
-                console.log(res.data.images[0].image);
-                console.log(res.data);
-                // res.data.images.forEach(image => {
-                //     setUrl(image.image);
-                // });
-                setImageItem(res.data.images)
-                setLoading(false);
-                setImgLoad(true);
-                return res.data;
-            });
+            const data = await axios.post("https://api.kakaobrain.com/v2/inference/karlo/t2i",
+                JSON.stringify(settings)
+                , {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'KakaoAK ' + apiKey,
+                    },
+                });
+
+            console.log(data);
+
+            setImageItem(data.data.images)
+            setLoading(false);
+            setImgLoad(true);
+
+            handleSnackBar('success', '이미지 생성이 완료되었습니다. CDN 유효 시간이 지나기 전에 저장해주세요');
+
+            // return data.data;
         } catch (e) {
             console.log(e);
+            handleSnackBar('error', '이미지 생성에 실패했습니다.');
         }
 
     }
@@ -137,6 +152,11 @@ export default function ImageGenerator() {
 
 
     useEffect(() => {
+
+        if (!isLogin) {
+            handleSnackBar('warning', '로그인 후 이용해주세요.');
+            return (navigate('/'));
+        }
 
         if (mainContainerRef.current) {
             mainContainerRef.current.style.minHeight = "calc(100vh - 162px)";
@@ -290,7 +310,8 @@ export default function ImageGenerator() {
             <Flex justifyContent={"center"}>
                 <Box margin={10} width={700} height={700} borderStyle={"shadow"}>
                     {!loading && !imgLoad &&
-                        <Flex direction={"column"} justifyContent={"center"} alignItems={"center"} width={"100%"} height={700}>
+                        <Flex direction={"column"} justifyContent={"center"} alignItems={"center"} width={"100%"}
+                              height={700}>
                             <DefaultLogo/>
                             {isDarkMode ? <CustomDarkSig/> : <CustomSig/>}
                         </Flex>}

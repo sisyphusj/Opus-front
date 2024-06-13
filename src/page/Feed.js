@@ -23,12 +23,11 @@ export default function Feed() {
 
     const getPins = async (n, keyword) => {
 
+        if (keyword === null) keyword = '';
+
         try {
-            const response = await api.post("http://localhost:8080/pin/list", {
-                amount: 4,
-                offset: n.from,
-                keyword: keyword
-            })
+            const response = await api.get(`/api/pins?offset=${n.from}&amount=4&keyword=${keyword}`)
+            console.log(response);
             return Promise.resolve(response.data);
         } catch (error) {
             console.error(error);
@@ -40,7 +39,7 @@ export default function Feed() {
     const getTotalCount = async (keyword) => {
         try {
             if (keyword === null) keyword = '';
-            const response = await api.get(`/pin/total?keyword=${keyword}`);
+            const response = await api.get(`/api/pins/total?keyword=${keyword}`);
             console.log(response.data);
             setTotal(response.data);
         } catch (error) {

@@ -12,17 +12,17 @@ import MyComment from "../page/info/MyComment";
 
 const AppRoutes = () => (
     <Routes>
-      {/**
-       * @description 기본 루트 경로에는 Feed 페이지를 렌더링
-       */}
-      <Route path="/" element={<Feed/>}/>
+        {/**
+         * @description 기본 루트 경로에는 Feed 페이지를 렌더링
+         */}
+        <Route path="/" element={<Feed/>}/>
 
-      <Route path="/image-generator" element={<ImageGenerator/>}/>
-      <Route path="/settings" element={<Setting/>}>
-        <Route path="profile" element={<MyProfile/>}/>
-        <Route path="library" element={<MyLibrary/>}/>
-        <Route path="comment" element={<MyComment/>}/>
-      </Route>
+        <Route path="/image-generator" element={<ImageGenerator/>}/>
+        <Route path="/settings" element={<Setting/>}>
+            <Route path="profile" element={<MyProfile/>}/>
+            <Route path="library" element={<MyLibrary/>}/>
+            <Route path="comment" element={<MyComment/>}/>
+        </Route>
     </Routes>
 );
 

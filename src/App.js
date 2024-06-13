@@ -11,6 +11,7 @@ import PinModal from "./component/PinModal";
 import MyComment from "./page/info/MyComment";
 import CustomSnackbar from "./component/CustomSnackbar";
 import Feed from "./page/Feed";
+import {createGlobalStyle} from "styled-components";
 
 function App() {
 
@@ -20,6 +21,7 @@ function App() {
     return (
         <BrowserRouter>
             <ColorSchemeProvider colorScheme={mode ? "dark" : "light"} fullDimensions>
+                <GlobalStyle darkMode={mode}/>
                 <Box fit color="default" minWidth={575}>
                     <Header/>
                     <Routes>
@@ -40,3 +42,23 @@ function App() {
 }
 
 export default App;
+
+
+const GlobalStyle = createGlobalStyle`
+  ::-webkit-scrollbar {
+    width: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: ${(props) => (props.darkMode ? '#333' : '#f1f1f1')};
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: ${(props) => (props.darkMode ? '#555' : '#aaa')};
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: ${(props) => (props.darkMode ? '#777' : '#888')};
+  }
+`;

@@ -21,6 +21,7 @@ import Grow from "@mui/material/Grow";
 import Paper from "@mui/material/Paper";
 import ClickAwayListener from "@mui/material/ClickAwayListener";
 import MenuList from "@mui/material/MenuList";
+import {getCookieToken} from "../Cookies";
 
 const Comments = ({comments}) => {
     const topLevelComments = comments.filter(comment => comment.topLevelCommentId === null);
@@ -40,7 +41,7 @@ const Comments = ({comments}) => {
     return (
         <div>
             {topLevelComments.map(comment => (
-                <Comment key={comment.cid} comment={comment} comments={comments}/>
+                <Comment key={comment.commentId} comment={comment} comments={comments}/>
             ))}
             <div ref={bottomRef}/>
         </div>
@@ -53,7 +54,7 @@ const Comment = React.memo(({comment, comments}) => {
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
     const [reply, setReply] = useState('');
     const [currentCommentId, setCurrentCommentId] = useRecoilState(currentReplyState);
-    const replies = comments.filter(reply => reply.topLevelCommentId === comment.cid);
+    const replies = comments.filter(reply => reply.topLevelCommentId === comment.commentId);
     const pinData = useRecoilValue(currentPinState);
     const [commentList, setCommentList] = useRecoilState(commentListState);
     const [nickname, setNickname] = useState('');
@@ -75,7 +76,7 @@ const Comment = React.memo(({comment, comments}) => {
 
     const getCommentData = async () => {
         try {
-            const response = await api.get(`/comment/list/${pinData.pid}`);
+            const response = await api.get(`/api/pins/comments/list?pinId=${pinData.pinId}`);
             setCommentList(response.data);
         } catch (e) {
             handleSnackBar('error', '댓글을 불러오는 중 오류가 발생했습니다.');
@@ -84,13 +85,13 @@ const Comment = React.memo(({comment, comments}) => {
     };
 
     const handleReplyButton = (comment) => {
-        if (isReplyOpen && comment.cid === currentCommentId) {
+        if (isReplyOpen && comment.commentId === currentCommentId) {
             setIsReplyOpen(false);
             setCurrentCommentId(null);
         } else {
             setIsReplyOpen(false);
             setOpen(false);
-            setCurrentCommentId(comment.cid);
+            setCurrentCommentId(comment.commentId);
             setIsReplyOpen(true);
         }
     };
@@ -131,12 +132,12 @@ const Comment = React.memo(({comment, comments}) => {
         }
 
         try {
-            await api.post('/comment/add', {
-                pId: comment.pid,
-                topLevelCommentId: comment.level === 0 ? comment.cid : comment.topLevelCommentId,
+            await api.post('/api/pins/comments', {
+                pinId: comment.pinId,
+                topLevelCommentId: comment.level === 0 ? comment.commentId : comment.topLevelCommentId,
                 content: reply,
                 level: 1,
-                parentNick: comment.nick,
+                parentNick: comment.nickname,
             });
 
             setReply('');
@@ -161,9 +162,9 @@ const Comment = React.memo(({comment, comments}) => {
         }
 
         try {
-            await api.post('/comment/update', {
-                cId: comment.cid,
-                pId: comment.pid,
+            await api.put('/api/pins/comments', {
+                cId: comment.commentId,
+                pId: comment.pinId,
                 level: comment.level,
                 content: reply,
             });
@@ -183,8 +184,10 @@ const Comment = React.memo(({comment, comments}) => {
 
     const deleteComment = async () => {
 
+        console.log(comment.commentId);
+
         try {
-            await api.delete(`comment/delete/${comment.cid}`);
+            await api.delete(`/api/pins/comments/${comment.commentId}`);
 
             handleSnackBar('success', '댓글이 삭제되었습니다.');
             await getCommentData();
@@ -196,12 +199,12 @@ const Comment = React.memo(({comment, comments}) => {
         setOpen(false);
     }
 
-    const getNick = () => {
+    const getNickname = () => {
         try {
-            const response = api.get('/member/profile');
+            const response = api.get('/api/member/profile');
 
             response.then((res) => {
-                setNickname(res.data.nick);
+                setNickname(res.data.nickname);
             });
         } catch (e) {
             console.log(e);
@@ -244,10 +247,10 @@ const Comment = React.memo(({comment, comments}) => {
     useEffect(() => {
         setIsReplyOpen(false);
 
-        if (isLogin) {
-            getNick();
+        if (isLogin && getCookieToken()) {
+            getNickname();
         }
-    }, []);
+    }, [isLogin]);
 
     useEffect(() => {
 
@@ -272,22 +275,22 @@ const Comment = React.memo(({comment, comments}) => {
     }, []);
 
     useEffect(() => {
-        if (isReplyOpen && comment.cid === currentCommentId && inputRef.current) {
+        if (isReplyOpen && comment.commentId === currentCommentId && inputRef.current) {
             scrollToMiddle();
             inputRef.current.focus();
         }
-    }, [isReplyOpen, comment.cid, currentCommentId]);
+    }, [isReplyOpen, comment.commentId, currentCommentId]);
 
     return (
         <div>
             <div style={{display: "flex", marginLeft: `${comment.level * 20}px`, marginTop: '15px'}}>
-                <Nick style={{marginRight: "5px"}}>{comment.nick}</Nick>
+                <Nick style={{marginRight: "5px"}}>{comment.nickname}</Nick>
                 <CommentLine>
                     <div style={{
                         width: "300px",
                         wordWrap: "break-word",
                         whiteSpace: "normal"
-                    }}>{comment.parentNick && <>@{comment.parentNick}</>} {comment.content}</div>
+                    }}>{comment.parentNickname && <>@{comment.parentNickname}</>} {comment.content}</div>
                     <div style={{display: "flex"}}>
                         <div style={{marginTop: "10px"}}>
                             {currentDate}
@@ -299,7 +302,7 @@ const Comment = React.memo(({comment, comments}) => {
 
                         <div ref={containerRef} style={{position: 'relative'}}>
 
-                            {isLogin && nickname === comment.nick && <IconButton onClick={handleToggle} ref={anchorRef}>
+                            {isLogin && nickname === comment.nickname && <IconButton onClick={handleToggle} ref={anchorRef}>
                                 <MoreHorizIcon/>
                             </IconButton>}
 
@@ -339,7 +342,7 @@ const Comment = React.memo(({comment, comments}) => {
                             </Popper>
                         </div>
                     </div>
-                    {isReplyOpen && comment.cid === currentCommentId &&
+                    {isReplyOpen && comment.commentId === currentCommentId &&
                         <Flex direction={"row"} alignItems={"center"}>
                             <CustomInput
                                 id="reply_field"
@@ -368,20 +371,20 @@ const Comment = React.memo(({comment, comments}) => {
                 <>
                     {replies.length > 0 && (
                         <Button size = {"small"} variant={"text"} onClick={handleShowAllReplies} style={{marginLeft : "55px"}} >
-                            {showAllReplies ? '숨기기' : `모든 대댓글 보기 (${comments.filter(reply => reply.topLevelCommentId === comment.cid).length})`}
+                            {showAllReplies ? '숨기기' : `모든 대댓글 보기 (${comments.filter(reply => reply.topLevelCommentId === comment.commentId).length})`}
                         </Button>
                     )}
 
                     <Collapse in={showAllReplies}>
                         {replies.map((reply) => (
-                            <Comment key={reply.cid} comment={reply} comments={comments}/>
+                            <Comment key={reply.commentId} comment={reply} comments={comments}/>
                         ))}
                     </Collapse>
                 </>
             ) : (
                 <>
                     {replies.map((reply) => (
-                        <Comment key={reply.cid} comment={reply} comments={comments}/>
+                        <Comment key={reply.commentId} comment={reply} comments={comments}/>
                     ))}
                 </>
             )}

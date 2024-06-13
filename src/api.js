@@ -3,65 +3,65 @@ import {getCookieToken, setRefreshToken} from "./Cookies";
 
 // Axios 인스턴스 생성
 export const api = axios.create({
-    baseURL: "http://localhost:8080",
+  baseURL: "http://localhost:8080",
 });
 
 // Axios 인터셉터 설정
 api.interceptors.request.use(
     async (config) => {
-        const accessToken = sessionStorage.getItem("accessToken");
+      const accessToken = sessionStorage.getItem("accessToken");
 
-
-        if (accessToken) {
-            config.headers.Authorization = `Bearer ${accessToken}`;
-        }
-        // console.log(config);
-        return config;
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+      return config;
     },
     (error) => {
-        // 예외 처리
-        console.log(error);
+      return Promise.reject(error);
     }
 );
 
 api.interceptors.response.use(
     (response) => {
-        return response;
+      return response;
     },
     async (error) => {
+      const originalConfig = error.config;
 
-        const originalConfig = error.config;
+      if (error.response.status === 401 && !originalConfig._retry) {
+        originalConfig._retry = true; // 재시도 여부 플래그 설정
 
-        console.log(error);
+        const refreshToken = getCookieToken();
+        const accessToken = sessionStorage.getItem("accessToken");
 
-        if (error.response.status === 401) {
-            const refreshToken = getCookieToken();
-            const accessToken = sessionStorage.getItem("accessToken");
-
-            if (!refreshToken) {
-                return Promise.reject(error);
-            }
-
-            try {
-                const response = await axios.post("http://localhost:8080/member/reissue", {
-                    accessToken: accessToken,
-                    refreshToken: refreshToken,
-                });
-
-                if (response.data) {
-                    const newAccessToken = response.data.accessToken;
-                    setRefreshToken(response.data.refreshToken);
-                    sessionStorage.setItem("accessToken", newAccessToken);
-                    return api(originalConfig);
-                }
-            } catch (e) {
-                console.log(e);
-                alert("인증에 실패하였습니다 다시 로그인해 주십시오.");
-                window.location.href = "/";
-            }
-            return Promise.reject(error);
+        if (!refreshToken) {
+          return Promise.reject(error);
         }
-        return Promise.reject(error);
+
+        try {
+          const response = await axios.post(
+              "http://localhost:8080/api/auth/reissue-token", {
+                accessToken: accessToken,
+                refreshToken: refreshToken,
+              });
+
+          if (response.data) {
+            const newAccessToken = response.data.accessToken;
+            setRefreshToken(response.data.refreshToken);
+            sessionStorage.setItem("accessToken", newAccessToken);
+
+            // 새로운 accessToken으로 재시도
+            originalConfig.headers.Authorization = `Bearer ${newAccessToken}`;
+            return api(originalConfig);
+          }
+        } catch (e) {
+          console.log(e);
+          alert("인증에 실패하였습니다 다시 로그인해 주십시오.");
+          window.location.href = "/";
+        }
+      }
+
+      return Promise.reject(error);
     }
 );
 

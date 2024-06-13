@@ -1,8 +1,8 @@
 import React, {useMemo} from "react";
 import {BrowserRouter} from "react-router-dom";
-import Header from "./component/Header";
+import Header from "./component/header/Header";
 import {Box, ColorSchemeProvider} from "gestalt";
-import PinModal from "./component/PinModal";
+import PinModal from "./component/modals/pin_modal/PinModal";
 import CustomSnackbar from "./component/CustomSnackbar";
 import AppRoutes from "./routes/AppRoutes";
 import GlobalStyle from "./styles/GlobalStyle";

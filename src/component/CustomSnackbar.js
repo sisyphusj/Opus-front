@@ -12,8 +12,6 @@ export default function CustomSnackbar() {
      *   type : 'success', 'info', 'warning', 'error'
      */
 
-    console.log(snackbarType);
-
     return (
         <Snackbar
             open={open}

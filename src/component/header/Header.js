@@ -17,7 +17,7 @@ import LoginModal from "../LoginModal";
 import useSnackbar from "../../hooks/useSnackbar";
 import Logo from "./Logo";
 import SearchInput from "./SearchInput";
-import HeaderIconButton from "./HeaderIconButton";
+import HeaderIconButton from "../buttons/HeaderIconButton";
 
 function Header() {
     const [searchValue, setSearchValue] = useState('');

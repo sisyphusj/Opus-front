@@ -105,9 +105,9 @@ const SignupModal = () => {
       const res = await api.get(`/api/member/check/nickname/${nickname}`);
       if (res.status === 200) {
         if (res.data === true) {
-          setIdError(true);
+          setNickError(true);
         } else {
-          setIdError(false);
+          setNickError(false);
         }
       }
     } catch (e) {
@@ -135,9 +135,9 @@ const SignupModal = () => {
       const res = await api.get(`/api/member/check/email/${email}`);
       if (res.status === 200) {
         if (res.data === true) {
-          setIdError(true);
+          setEmailError(true);
         } else {
-          setIdError(false);
+          setEmailError(false);
         }
       }
     } catch (e) {

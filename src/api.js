@@ -35,8 +35,8 @@ api.interceptors.response.use(
     async (error) => {
         const originalConfig = error.config;
 
-        if (error.response.status === 401) {
-            // originalConfig._retry = true; // 재시도 여부 플래그 설정
+        if (error.response && error.response.status === 401 && !originalConfig._retry) {
+            originalConfig._retry = true; // 재시도 여부 플래그 설정
 
             const refreshToken = getCookieToken();
             const accessToken = sessionStorage.getItem("accessToken");
@@ -61,6 +61,7 @@ api.interceptors.response.use(
                 );
 
                 if (response.data) {
+
                     const newAccessToken = response.data.accessToken;
                     setRefreshToken(response.data.refreshToken);
                     sessionStorage.setItem("accessToken", newAccessToken);
@@ -69,6 +70,7 @@ api.interceptors.response.use(
 
                     // 새로운 accessToken으로 재시도
                     originalConfig.headers.Authorization = `Bearer ${newAccessToken}`;
+
                     return api(originalConfig);
                 }
             } catch (e) {

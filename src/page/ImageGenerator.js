@@ -8,19 +8,15 @@ import React, {
 import {Box, Flex} from "gestalt";
 import axios from "axios";
 import api from "../api";
-import {useRecoilState, useRecoilValue} from "recoil";
-import {
-    isLoginState,
-    snackMessageState,
-    snackOpenState,
-    snackTypeState
-} from "../atom";
+import {useRecoilValue} from "recoil";
+import {isLoginState} from "../atom";
 import {useNavigate} from "react-router-dom";
 import PromptField from "../component/img-generator/PromptField";
 import ImageControls from "../component/img-generator/ImageControls";
 import ImageDisplay, {
     ImageContainer
 } from "../component/img-generator/ImageDisplay";
+import useSnackbar from "../hooks/useSnackbar";
 
 // 메인 컴포넌트
 export default function ImageGenerator() {
@@ -45,10 +41,6 @@ export default function ImageGenerator() {
 
     // Recoil 상태
     const isLogin = useRecoilValue(isLoginState);
-    const [snackbarOpen, setSnackbarOpen] = useRecoilState(snackOpenState);
-    const [snackbarMessage, setSnackbarMessage] = useRecoilState(
-        snackMessageState);
-    const [snackbarType, setSnackbarType] = useRecoilState(snackTypeState);
 
     // 참조 변수
     const textFieldRef = useRef(null);
@@ -59,12 +51,7 @@ export default function ImageGenerator() {
 
     const navigate = useNavigate();
 
-    // 스낵바 핸들러
-    const handleSnackBar = useCallback((type, msg) => {
-        setSnackbarType(type);
-        setSnackbarMessage(msg);
-        setSnackbarOpen(true);
-    }, [setSnackbarType, setSnackbarMessage, setSnackbarOpen]);
+    const {showSnackbar} = useSnackbar();
 
     // 이미지 저장 함수
     const saveImage = async () => {
@@ -79,11 +66,11 @@ export default function ImageGenerator() {
             });
 
             console.log(data);
-            handleSnackBar('success', '이미지가 저장되었습니다.');
+            showSnackbar('success', '이미지가 저장되었습니다.');
 
         } catch (e) {
             console.log(e);
-            handleSnackBar('error', '이미지를 저장하는데 실패했습니다.');
+            showSnackbar('error', '이미지를 저장하는데 실패했습니다.');
         }
     };
 
@@ -122,12 +109,12 @@ export default function ImageGenerator() {
             setLoading(false);
             setImgLoad(true);
 
-            handleSnackBar('success',
+            showSnackbar('success',
                 '이미지 생성이 완료되었습니다. CDN 유효 시간이 지나기 전에 저장해주세요');
 
         } catch (e) {
             console.log(e);
-            handleSnackBar('error', '이미지 생성에 실패했습니다.');
+            showSnackbar('error', '이미지 생성에 실패했습니다.');
         }
     };
 
@@ -161,7 +148,7 @@ export default function ImageGenerator() {
     // 기본 효과
     useEffect(() => {
         if (!isLogin) {
-            handleSnackBar('warning', '로그인 후 이용해주세요.');
+            showSnackbar('warning', '로그인 후 이용해주세요.');
             navigate('/');
         }
 
@@ -173,7 +160,7 @@ export default function ImageGenerator() {
             textFieldRef.current.style.borderRadius = "14px";
             negativeTextFieldRef.current.style.borderRadius = "14px";
         }
-    }, [isLogin, handleSnackBar, navigate]);
+    }, [isLogin, showSnackbar, navigate]);
 
     return (
         <Flex direction={mainDirection} justifyContent={"center"}>

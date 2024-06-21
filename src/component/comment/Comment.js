@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Collapse, IconButton, Button } from "@mui/material";
 import { ReactComponent as ChatIcon } from "../../assets/chat.svg";
 import styled from "styled-components";
-import { useCommentHooks } from "../../hooks/useCommentHooks";
+import { useComment } from "../../hooks/useComment";
 import { formatDate } from "../../utils/dateUtils";
 import ReplyInput from "./ReplyInput";
 import MoreOptions from "./MoreOptions";
@@ -23,7 +23,7 @@ const Comment = React.memo(({ comment, comments }) => {
         submitReply,
         updateComment,
         deleteComment,
-    } = useCommentHooks(comment);
+    } = useComment(comment);
 
     const replies = comments.filter(reply => reply.topLevelCommentId === comment.commentId);
 

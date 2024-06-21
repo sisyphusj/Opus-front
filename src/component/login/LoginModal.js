@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from 'gestalt';
 import CustomModal from '../CommonModal';
-import SignupModal from "../SignupModal";
+import SignupModal from "../signup/SignupModal";
 import useLogin from '../../hooks/useLogin';
 import LoginModalContent from './LoginModalContent';
 import { useRecoilState } from 'recoil';

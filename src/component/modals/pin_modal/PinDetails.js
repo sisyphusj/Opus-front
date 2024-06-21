@@ -10,7 +10,7 @@ import {
     AccordionGroup,
     AccordionSummary
 } from "@mui/joy";
-import Comments from "../../Comment";
+import Comments from "../../comment/Comments";
 import DeleteButton from "../../buttons/PinDeleteButton";
 import ChangeButton from "../../buttons/PinChangeButton";
 import NickLabel from "../../labels/PinNickLabel";

@@ -11,7 +11,7 @@ import api from '../api';
 import {getCookieToken} from '../Cookies';
 import useSnackbar from "./useSnackbar";
 
-export const useCommentHooks = (comment) => {
+export const useComment = (comment) => {
     const isLogin = useRecoilValue(isLoginState);
     const [isReplyOpen, setIsReplyOpen] = useRecoilState(isReplyOpenState);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);

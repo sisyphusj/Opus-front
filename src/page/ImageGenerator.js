@@ -1,410 +1,244 @@
-import {useEffect, useLayoutEffect, useRef, useState} from "react";
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Flex,
-  Image,
-  NumberField,
-  SearchField,
-  TextField
-} from "gestalt";
-import {Slider} from "@mui/material";
+import React, {
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+    useCallback
+} from "react";
+import {Box, Flex} from "gestalt";
 import axios from "axios";
-import styled from "styled-components";
 import api from "../api";
-import {ReactComponent as Logo} from "../assets/logo.svg";
-import {ReactComponent as SigLogo} from "../assets/sig_light.svg";
-import {ReactComponent as DarkSigLogo} from "../assets/sig_dark.svg";
-import LoadingIndicator from "../component/LoadingIndicator";
 import {useRecoilState, useRecoilValue} from "recoil";
 import {
-  isDarkModeState,
-  isLoginState,
-  snackMessageState,
-  snackOpenState,
-  snackTypeState
+    isLoginState,
+    snackMessageState,
+    snackOpenState,
+    snackTypeState
 } from "../atom";
 import {useNavigate} from "react-router-dom";
+import PromptField from "../component/img-generator/PromptField";
+import ImageControls from "../component/img-generator/ImageControls";
+import ImageDisplay, {
+    ImageContainer
+} from "../component/img-generator/ImageDisplay";
 
+// 메인 컴포넌트
 export default function ImageGenerator() {
-  const apiKey = process.env.REACT_APP_KAKAO_REST_API_KEY;
+    const apiKey = process.env.REACT_APP_KAKAO_REST_API_KEY;
 
-  const [loading, setLoading] = useState(false);
-  const [imgLoad, setImgLoad] = useState(false);
+    // 상태 변수
+    const [loading, setLoading] = useState(false);
+    const [imgLoad, setImgLoad] = useState(false);
+    const [imageItem, setImageItem] = useState([]);
+    const [currentImg, setCurrentImg] = useState(0);
+    const [searchValue, setSearchValue] = useState('');
+    const [searchNegativeValue, setSearchNegativeValue] = useState('');
+    const [direction, setDirection] = useState('row');
+    const [mainDirection, setMainDirection] = useState('row');
+    const [customWidth, setCustomWidth] = useState(600);
+    const [seed, setSeed] = useState(-1);
+    const [imgQuality, setImgQuality] = useState(50);
+    const [guidanceScale, setGuidanceScale] = useState(5);
+    const [samples, setSamples] = useState(1);
+    const [openArray, setOpenArray] = useState([false, false, false, false]);
+    const [imageSize, setImageSize] = useState([1024, 1024]);
 
-  const navigate = useNavigate();
-  const isLogin = useRecoilValue(isLoginState);
+    // Recoil 상태
+    const isLogin = useRecoilValue(isLoginState);
+    const [snackbarOpen, setSnackbarOpen] = useRecoilState(snackOpenState);
+    const [snackbarMessage, setSnackbarMessage] = useRecoilState(
+        snackMessageState);
+    const [snackbarType, setSnackbarType] = useRecoilState(snackTypeState);
 
-  const [imageItem, setImageItem] = useState([]);
-  const [currentImg, setCurrentImg] = useState(0);
+    // 참조 변수
+    const textFieldRef = useRef(null);
+    const negativeTextFieldRef = useRef(null);
+    const mainContainerRef = useRef(null);
+    const seedFieldRef = useRef(null);
+    const numberFieldRef = useRef(null);
 
-  const [searchValue, setSearchValue] = useState('');
-  const [searchNegativeValue, setSearchNegativeValue] = useState('');
-  const textFieldRef = useRef(null);
-  const negativeTextFieldRef = useRef(null);
-  const mainContainerRef = useRef(null);
-  const seedFieldRef = useRef(null);
-  const numberFieldRef = useRef(null);
-  const [direction, setDirection] = useState('row');
-  const [mainDirection, setMainDirection] = useState('row');
-  const [customWidth, setCustomWidth] = useState(600);
+    const navigate = useNavigate();
 
-  const [seed, setSeed] = useState(-1);
-  const [imgQuality, setImgQuality] = useState(50);
-  const [guidanceScale, setGuidanceScale] = useState(5);
+    // 스낵바 핸들러
+    const handleSnackBar = useCallback((type, msg) => {
+        setSnackbarType(type);
+        setSnackbarMessage(msg);
+        setSnackbarOpen(true);
+    }, [setSnackbarType, setSnackbarMessage, setSnackbarOpen]);
 
-  const [samples, setSamples] = useState(1);
-  const [openArray, setOpenArray] = useState([false, false, false, false]);
-  const [imageSize, setImageSize] = useState([1024, 1024]);
-  const isDarkMode = useRecoilValue(isDarkModeState);
+    // 이미지 저장 함수
+    const saveImage = async () => {
+        try {
+            const data = await api.post("/api/pins/register", {
+                imagePath: imageItem[currentImg].image,
+                prompt: searchValue,
+                width: imageSize[0],
+                height: imageSize[1],
+                seed: imageItem[currentImg].seed,
+                negativePrompt: searchNegativeValue,
+            });
 
-  const [snackbarOpen, setSnackbarOpen] = useRecoilState(snackOpenState);
-  const [snackbarMessage, setSnackbarMessage] = useRecoilState(
-      snackMessageState);
-  const [snackbarType, setSnackbarType] = useRecoilState(snackTypeState);
+            console.log(data);
+            handleSnackBar('success', '이미지가 저장되었습니다.');
 
-  const handleSnackBar = (type, msg) => {
-    setSnackbarType(type);
-    setSnackbarMessage(msg);
-    setSnackbarOpen(true);
-  }
+        } catch (e) {
+            console.log(e);
+            handleSnackBar('error', '이미지를 저장하는데 실패했습니다.');
+        }
+    };
 
-  const saveImage = async () => {
+    // 이미지 생성 함수
+    const getImages = async () => {
+        setImgLoad(false);
+        setLoading(true);
+        setCurrentImg(0);
+        setImageItem([]);
 
-    try {
-      const data = await api.post("/api/pins", {
-        imagePath: imageItem[currentImg].image,
-        prompt: searchValue,
-        width: imageSize[0],
-        height: imageSize[1],
-        seed: imageItem[currentImg].seed,
-        negativePrompt: searchNegativeValue,
-      });
+        const settings = {
+            version: "v2.1",
+            prompt: searchValue,
+            negative_prompt: searchNegativeValue,
+            width: imageSize[0],
+            height: imageSize[1],
+            image_quality: imgQuality,
+            guidance_scale: guidanceScale,
+            samples: samples
+        };
 
-      console.log(data);
-      handleSnackBar('success', '이미지가 저장되었습니다.');
+        try {
+            const data = await axios.post(
+                "https://api.kakaobrain.com/v2/inference/karlo/t2i",
+                JSON.stringify(settings),
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'KakaoAK ' + apiKey,
+                    },
+                });
 
-    } catch (e) {
-      console.log(e);
-      handleSnackBar('error', '이미지를 저장하는데 실패했습니다.');
-    }
+            console.log(data);
 
-  }
+            setImageItem(data.data.images);
+            setLoading(false);
+            setImgLoad(true);
 
-  const getImages = async () => {
-    setImgLoad(false);
-    setLoading(true);
-    setCurrentImg(0);
-    setImageItem([]);
+            handleSnackBar('success',
+                '이미지 생성이 완료되었습니다. CDN 유효 시간이 지나기 전에 저장해주세요');
 
-    const settings = {
-      version: "v2.1",
-      prompt: searchValue,
-      negative_prompt: searchNegativeValue,
-      width: imageSize[0],
-      height: imageSize[1],
-      image_quality: imgQuality,
-      guidance_scale: guidanceScale,
-      samples: samples
-    }
-    try {
-      const data = await axios.post(
-          "https://api.kakaobrain.com/v2/inference/karlo/t2i",
-          JSON.stringify(settings)
-          , {
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'KakaoAK ' + apiKey,
-            },
-          });
+        } catch (e) {
+            console.log(e);
+            handleSnackBar('error', '이미지 생성에 실패했습니다.');
+        }
+    };
 
-      console.log(data);
+    // 필드 테두리 처리
+    const handleFieldBorder = useCallback((ref, active) => {
+        ref.current.style.boxShadow = "none";
+        ref.current.style.borderColor = active ? "#F2709C" : "#cdcdcd";
+    }, []);
 
-      setImageItem(data.data.images)
-      setLoading(false);
-      setImgLoad(true);
+    // 버튼 그룹 핸들링
+    const handleButtonGroup = (index) => {
+        setOpenArray(openArray.map((_, i) => i === index));
+        const sizes = [[1024, 1024], [1280, 768], [768, 1280], [512, 512]];
+        setImageSize(sizes[index]);
+    };
 
-      handleSnackBar('success', '이미지 생성이 완료되었습니다. CDN 유효 시간이 지나기 전에 저장해주세요');
+    // 레이아웃 효과
+    useLayoutEffect(() => {
+        const updateDirection = () => {
+            setDirection(window.innerWidth > 1350 ? 'row' : 'column');
+            setCustomWidth(window.innerWidth > 730 ? 600 : 400);
+            setMainDirection(window.innerWidth > 1910 ? 'row' : 'column');
+        };
 
-      // return data.data;
-    } catch (e) {
-      console.log(e);
-      handleSnackBar('error', '이미지 생성에 실패했습니다.');
-    }
+        updateDirection();
+        window.addEventListener('resize', updateDirection);
 
-  }
+        return () => window.removeEventListener('resize', updateDirection);
+    }, []);
 
-  const handleFieldBorder = (ref, boolean) => {
-    ref.current.style.boxShadow = "none";
-    if (boolean) {
-      ref.current.style.borderColor = "#F2709C";
-    } else {
-      ref.current.style.borderColor = "#cdcdcd";
-    }
-  }
+    // 기본 효과
+    useEffect(() => {
+        if (!isLogin) {
+            handleSnackBar('warning', '로그인 후 이용해주세요.');
+            navigate('/');
+        }
 
-  const handleButtonGroup = (n) => {
-    setOpenArray(
-        n === 1 ? [true, false, false, false] :
-            n === 2 ? [false, true, false, false] : n === 3 ? [false, false,
-              true, false] : [false, false, false, true]
-    )
-    setImageSize(
-        n === 1 ? [1024, 1024] : n === 2 ? [1280, 768] : n === 3 ? [768, 1280]
-            : [512, 512])
-  }
+        if (mainContainerRef.current) {
+            mainContainerRef.current.style.minHeight = "calc(100vh - 122px)";
+        }
 
-  useLayoutEffect(() => {
-    function updateDirection() {
-      setDirection(window.innerWidth > 1350 ? 'row' : 'column');
-      setCustomWidth(window.innerWidth > 730 ? 600 : 400);
-      setMainDirection(window.innerWidth > 1910 ? 'row' : 'column');
-    }
+        if (textFieldRef.current) {
+            textFieldRef.current.style.borderRadius = "14px";
+            negativeTextFieldRef.current.style.borderRadius = "14px";
+        }
+    }, [isLogin, handleSnackBar, navigate]);
 
-    updateDirection();
-
-    window.addEventListener('resize', updateDirection);
-
-    // 컴포넌트 언마운트 시 이벤트 리스너 제거
-    return () => window.removeEventListener('resize', updateDirection);
-  }, []);
-
-  useEffect(() => {
-
-    if (!isLogin) {
-      handleSnackBar('warning', '로그인 후 이용해주세요.');
-      return (navigate('/'));
-    }
-
-    if (mainContainerRef.current) {
-      mainContainerRef.current.style.minHeight = "calc(100vh - 122px)";
-    }
-
-    if (textFieldRef.current) {
-      textFieldRef.current.style.borderRadius = "14px";
-      negativeTextFieldRef.current.style.borderRadius = "14px";
-    }
-
-  }, []);
-
-  return (
-      <Flex direction={mainDirection} justifyContent={"center"}>
-        <Box maxWidth={1000} marginStart={8} padding={5} ref={mainContainerRef}>
-          <Flex minWidth={"100%"} direction="column" gap={5} flex={"grow"}>
-            <Box margin={4}>
-              <Label>Prompt</Label>
-              <SearchField
-                  accessibilityLabel={"search"}
-                  id="prompt"
-                  onChange={({value}) => setSearchValue(value)}
-                  value={searchValue}
-                  size="lg"
-                  autoComplete={"off"}
-                  ref={textFieldRef}
-                  onFocus={() => handleFieldBorder(textFieldRef, true)}
-                  onBlur={() => handleFieldBorder(textFieldRef, false)}
-              />
-            </Box>
-
-            <Box marginStart={4} marginEnd={4}>
-              <Label>NegativePrompt</Label>
-              <SearchField
-                  accessibilityLabel={"search"}
-                  id="prompt"
-                  onChange={({value}) => setSearchNegativeValue(value)}
-                  value={searchNegativeValue}
-                  size="lg"
-                  autoComplete={"off"}
-                  ref={negativeTextFieldRef}
-                  onFocus={() => handleFieldBorder(negativeTextFieldRef, true)}
-                  onBlur={() => handleFieldBorder(negativeTextFieldRef, false)}
-              />
-            </Box>
-
-            <Box fit margin={2}>
-              <Flex direction={direction} justifyContent={"between"}>
-                <Box>
-                  <Box width={customWidth} margin={3} marginEnd={6}>
-                    <Label>Sampling Steps</Label>
-                    <Slider
-                        aria-label="SamplingSteps"
-                        defaultValue={50}
-                        valueLabelDisplay="auto"
-                        shiftStep={30}
-                        step={5}
-                        marks
-                        min={10}
-                        max={100}
-                        onChange={(e) => setImgQuality(e.target.value)}
-                        style={{color: "#FF9472", marginBottom: "30px"}}
+    return (
+        <Flex direction={mainDirection} justifyContent={"center"}>
+            <Box maxWidth={1000} marginStart={8} padding={5}
+                 ref={mainContainerRef}>
+                <Flex minWidth={"100%"} direction="column" gap={5}
+                      flex={"grow"}>
+                    <PromptField
+                        label="Prompt"
+                        value={searchValue}
+                        onChange={setSearchValue}
+                        ref={textFieldRef}
+                        handleFieldBorder={handleFieldBorder}
                     />
-
-                    <Label>Guidance Scale</Label>
-                    <Slider
-                        aria-label="GuidanceScale"
-                        defaultValue={5}
-                        valueLabelDisplay="auto"
-                        shiftStep={1}
-                        step={1}
-                        marks
-                        min={4}
-                        max={15}
-                        onChange={(e) => setGuidanceScale(e.target.value)}
-                        style={{color: "#FF9472"}}
-
+                    <PromptField
+                        label="NegativePrompt"
+                        value={searchNegativeValue}
+                        onChange={setSearchNegativeValue}
+                        ref={negativeTextFieldRef}
+                        handleFieldBorder={handleFieldBorder}
                     />
-                  </Box>
-
-                  <Flex>
-                    <Box width={200} margin={3} marginTop={5}>
-                      <Label> Seed </Label>
-                      <TextField id={"seed"} onChange={(v) => setSeed(v.value)}
-                                 autoComplete={"off"}
-                                 size={"md"}
-                                 value={seed}
-                                 placeholder={"random seed = -1"}
-                                 ref={seedFieldRef}
-                                 onFocus={() => handleFieldBorder(seedFieldRef,
-                                     true)}
-                                 onBlur={() => handleFieldBorder(seedFieldRef,
-                                     false)}/>
+                    <ImageControls
+                        direction={direction}
+                        customWidth={customWidth}
+                        imgQuality={imgQuality}
+                        setImgQuality={setImgQuality}
+                        guidanceScale={guidanceScale}
+                        setGuidanceScale={setGuidanceScale}
+                        seed={seed}
+                        setSeed={setSeed}
+                        samples={samples}
+                        setSamples={setSamples}
+                        openArray={openArray}
+                        handleButtonGroup={handleButtonGroup}
+                        handleFieldBorder={handleFieldBorder}
+                        getImages={getImages}
+                        saveImage={saveImage}
+                        loading={loading}
+                        imgLoad={imgLoad}
+                        isLogin={isLogin}
+                        seedFieldRef={seedFieldRef}
+                        numberFieldRef={numberFieldRef}
+                    />
+                    <Box height={"100%"} minHeight={170} borderStyle={"lg"}
+                         padding={2}>
+                        <Flex direction={"row"} justifyContent={"center"}
+                              alignItems={"center"}>
+                            {imageItem.map((item, index) => (
+                                <Box key={item.id} marginEnd={4}
+                                     onMouseDown={() => setCurrentImg(index)}>
+                                    <ImageContainer src={item.image}
+                                                    alt={item.seed}/>
+                                </Box>
+                            ))}
+                        </Flex>
                     </Box>
-
-                    <Box width={100} margin={3} marginTop={5}>
-                      <Label>Samples</Label>
-                      <NumberField id={"samples"}
-                                   onChange={(v) => setSamples(v.value)}
-                                   autoComplete={"off"}
-                                   size={"md"} min={1} max={4}
-                                   ref={numberFieldRef}
-                                   value={samples}
-                                   onFocus={() => handleFieldBorder(
-                                       numberFieldRef, true)}
-                                   onBlur={() => handleFieldBorder(
-                                       numberFieldRef, false)}/>
-                    </Box>
-                  </Flex>
-
-                </Box>
-
-                <Box width={"100%"} margin={3}>
-                  <Box>
-                    <Label style={{marginBottom: "6px"}}>Size</Label>
-                    <ButtonGroup>
-                      <Button text={"1024×1024"} selected={openArray[0]}
-                              size={"lg"}
-                              onClick={() => handleButtonGroup(1)}/>
-                      <Button text={"1280×768"} selected={openArray[1]}
-                              size={"lg"}
-                              onClick={() => handleButtonGroup(2)}/>
-                      <Button text={"768×1280"} selected={openArray[2]}
-                              size={"lg"}
-                              onClick={() => handleButtonGroup(3)}/>
-                      <Button text={"512×512"} selected={openArray[3]}
-                              size={"lg"}
-                              onClick={() => handleButtonGroup(4)}/>
-                    </ButtonGroup>
-                  </Box>
-
-                  <Box fit marginTop={7}>
-                    <Flex justifyContent={"start"} alignItems="stretch">
-                      <Box width={200}>
-                        <Button fullWidth={true} text={"Create Image"}
-                                onClick={getImages}
-                                size={"lg"}/>
-                        {!loading && imgLoad && isLogin &&
-                            <Box marginTop={3}>
-                              <Button fullWidth={true} text={"Save"}
-                                      onClick={saveImage}
-                                      size={"lg"}/>
-                            </Box>}
-                      </Box>
-                    </Flex>
-                  </Box>
-
-                </Box>
-              </Flex>
+                </Flex>
             </Box>
-            <Box height={"100%"} minHeight={170} borderStyle={"lg"} padding={2}>
-              <Flex direction={"row"} justifyContent={"center"}
-                    alignItems={"center"}>
-                {imageItem.map((imageItem, index) => (
-                    <Box key={imageItem.id} marginEnd={4}
-                         onMouseDown={() => setCurrentImg(index)}>
-                      <ImageContainer src={imageItem.image} alt={imageItem.seed}
-                                      style={{width: "170px"}}/>
-                    </Box>
-                ))
-                }
-              </Flex>
-            </Box>
-
-          </Flex>
-        </Box>
-        <Flex justifyContent={"center"}>
-          <Box margin={10} width={700} height={700} borderStyle={"shadow"}>
-            {!loading && !imgLoad &&
-                <Flex direction={"column"} justifyContent={"center"}
-                      alignItems={"center"} width={"100%"}
-                      height={700}>
-                  <DefaultLogo/>
-                  {isDarkMode ? <CustomDarkSig/> : <CustomSig/>}
-                </Flex>}
-
-            {loading && !imgLoad &&
-                <Flex justifyContent={"center"} alignItems={"center"}
-                      width={"100%"} height={700}>
-                  <CustomLoadingIndicator/>
-                </Flex>}
-
-            {!loading && imgLoad &&
-                <Box height={700}>
-                  <Image alt={"picture"} naturalHeight={300} naturalWidth={300}
-                         fit={"contain"}
-                         src={imageItem[currentImg].image}/>
-                </Box>
-            }
-          </Box>
+            <ImageDisplay
+                loading={loading}
+                imgLoad={imgLoad}
+                imageItem={imageItem}
+                currentImg={currentImg}
+                setCurrentImg={setCurrentImg}
+            />
         </Flex>
-
-
-      </Flex>
-  );
+    );
 }
-
-const Label = styled.h3`
-  margin-left: 6px;
-  margin-bottom: 4px;
-  color: #F2709C;
-`;
-
-const DefaultLogo = styled(Logo)`
-  width: 200px;
-  height: 200px;
-  opacity: 0.8;
-`;
-
-const CustomSig = styled(SigLogo)`
-  width: 200px;
-  height: 70px;
-`;
-
-const CustomDarkSig = styled(DarkSigLogo)`
-  width: 200px;
-  height: 70px;
-`;
-
-const CustomLoadingIndicator = styled(LoadingIndicator)`
-  width: 200px;
-  height: 200px;
-`;
-
-const ImageContainer = styled.img`
-  width: 170px;
-
-  &:hover {
-    opacity: 0.7;
-  }
-
-`;

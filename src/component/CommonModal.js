@@ -1,76 +1,61 @@
-import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import styled from 'styled-components';
-import {IconButton, TextField} from '@mui/material';
-import {Close} from '@mui/icons-material';
-import {ReactComponent as Logo} from '../assets/logo.svg';
-import {ReactComponent as TextLogo} from '../assets/textlogo.svg';
-import {Mask} from "gestalt";
+import { IconButton, TextField } from '@mui/material';
+import { Close } from '@mui/icons-material';
+import { ReactComponent as Logo } from '../assets/logo.svg';
+import { ReactComponent as TextLogo } from '../assets/textlogo.svg';
+import { Mask } from "gestalt";
 
-const CustomModal = ({isOpen, handleModal, type, children}) => {
+const CustomModal = ({ isOpen, handleModal, type, children }) => {
   const modalRef = useRef(null);
-  const [w, setW] = useState("1200px");
-  const [h, setH] = useState("700px");
+  const [dimensions, setDimensions] = useState({ width: '1200px', height: '700px' });
+
+  const updateDimensions = useCallback(() => {
+    setDimensions({
+      width: window.innerWidth > 1300 ? "1200px" : '65vw',
+      height: window.innerHeight > 800 ? "700px" : '75vh'
+    });
+  }, []);
 
   useLayoutEffect(() => {
-    function updateDirection() {
-      setW(window.innerWidth > 1300 ? "1200px" : '65vw');
-      setH(window.innerHeight > 800 ? "700px" : '75vh');
-    }
-
-    updateDirection();
-
-    window.addEventListener('resize', updateDirection);
-
-    // 컴포넌트 언마운트 시 이벤트 리스너 제거
-    return () => window.removeEventListener('resize', updateDirection);
-  }, []);
-
-  const disableScroll = () => {
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
-
-    // 스크롤 막기
-    document.body.style.overflow = 'hidden';
-    window.scrollTo(scrollLeft, scrollTop);
-  }
-
-  const enableScroll = () => {
-    document.body.style.overflow = 'auto';
-  }
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, [updateDimensions]);
 
   useEffect(() => {
-    disableScroll();
+    const disableScroll = () => {
+      document.body.style.overflow = 'hidden';
+    };
+    const enableScroll = () => {
+      document.body.style.overflow = 'auto';
+    };
 
-    return () => {
+    if (isOpen) {
+      disableScroll();
+    } else {
       enableScroll();
     }
-  }, []);
+
+    return () => enableScroll();
+  }, [isOpen]);
 
   return (
       <>
         {isOpen && (
             <Background>
               <Mask rounding={8}>
-                {type === 'md'
-                    ? (<Main ref={modalRef}>
-                      <CloseBox>
-                        <IconButton onClick={() => handleModal(false)}>
-                          <Close fontSize={'large'}/>
-                        </IconButton>
-                      </CloseBox>
-                      <LoginBox>{children}</LoginBox>
-                    </Main>)
-                    : type === 'lg' ? (
-                        <PinMain ref={modalRef} props={w} props1={h}>
-                          <PinCloseBox>
-                            <IconButton onClick={() => handleModal(false)}>
-                              <Close fontSize={'large'}/>
-                            </IconButton>
-                          </PinCloseBox>
-                          <LoginBox>{children}</LoginBox>
-                        </PinMain>
-                    ) : null
-                }
+                {type === 'md' ? (
+                    <ModalContent ref={modalRef}>
+                      <CloseButton handleClose={() => handleModal(false)} />
+                      <ContentBox>{children}</ContentBox>
+                    </ModalContent>
+                ) : type === 'lg' ? (
+                    <PinModalContent ref={modalRef} width={dimensions.width} height={dimensions.height}>
+                      <CloseButton handleClose={() => handleModal(false)} absolute />
+                      <ContentBox>{children}</ContentBox>
+                    </PinModalContent>
+                ) : null}
               </Mask>
             </Background>
         )}
@@ -78,51 +63,54 @@ const CustomModal = ({isOpen, handleModal, type, children}) => {
   );
 };
 
+const CloseButton = ({ handleClose, absolute = false }) => (
+    <CloseBox absolute={absolute}>
+      <IconButton onClick={handleClose}>
+        <Close fontSize={'large'} />
+      </IconButton>
+    </CloseBox>
+);
+
 export const Background = styled.div`
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5); /* 투명한 검은 배경 */
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 999;
 `;
 
-export const Main = styled.div`
+const ModalContent = styled.div`
   width: 450px;
   height: 650px;
   background: white;
   padding: 20px;
-  //border-radius: 8px;
 `;
 
-export const PinMain = styled.div`
-
-  width: ${({props}) => props};
+const PinModalContent = styled.div`
+  width: ${({ width }) => width};
   min-width: 450px;
-  height: ${({props1}) => props1};
+  height: ${({ height }) => height};
   min-height: 650px;
   background: white;
   padding: 20px;
   border-radius: 8px;
+  position: relative;
 `;
 
 const CloseBox = styled.div`
   display: flex;
   justify-content: flex-end;
-
-`;
-
-const PinCloseBox = styled.div`
-  position: absolute;
-  right: 20px;
+  position: ${({ absolute }) => (absolute ? 'absolute' : 'static')};
+  right: ${({ absolute }) => (absolute ? '20px' : 'auto')};
   z-index: 999;
 `;
 
-const LoginBox = styled.div`
+const ContentBox = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;

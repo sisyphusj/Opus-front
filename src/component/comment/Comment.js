@@ -122,7 +122,7 @@ const Comment = React.memo(({ comment, comments }) => {
                         whiteSpace: "normal"
                     }}>
 
-                        {comment.parentNickname ? <div> @{comment.parentNickname} </div> : null}
+                        {comment.parentNickname ? <div style={{color : "#F2709C"}}> @{comment.parentNickname} </div> : null}
                         {comment.content}
 
                     </div>

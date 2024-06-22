@@ -15,7 +15,7 @@ import DeleteButton from "../../buttons/PinDeleteButton";
 import ChangeButton from "../../buttons/PinChangeButton";
 import NickLabel from "../../labels/PinNickLabel";
 import PinImage from "./PinImage";
-import {Background, CustomInput} from "../../CommonModal";
+import {Background, CustomInput} from "../CommonModal";
 import styled from "styled-components";
 
 const PinDetails = React.memo(({

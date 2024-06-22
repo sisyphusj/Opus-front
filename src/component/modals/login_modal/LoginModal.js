@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from 'gestalt';
 import CustomModal from '../CommonModal';
-import SignupModal from "../signup/SignupModal";
-import useLogin from '../../hooks/useLogin';
+import SignupModal from "../signup_modal/SignupModal";
+import useLogin from '../../../hooks/useLogin';
 import LoginModalContent from './LoginModalContent';
 import { useRecoilState } from 'recoil';
-import { signUpOpenState } from '../../atom';
+import { signUpOpenState } from '../../../atom';
 
 const LoginModal = () => {
   const [isOpen, setIsOpen] = useState(false);

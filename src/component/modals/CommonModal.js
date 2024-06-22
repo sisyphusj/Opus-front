@@ -2,8 +2,8 @@ import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from
 import styled from 'styled-components';
 import { IconButton, TextField } from '@mui/material';
 import { Close } from '@mui/icons-material';
-import { ReactComponent as Logo } from '../assets/logo.svg';
-import { ReactComponent as TextLogo } from '../assets/textlogo.svg';
+import { ReactComponent as Logo } from '../../assets/logo.svg';
+import { ReactComponent as TextLogo } from '../../assets/textlogo.svg';
 import { Mask } from "gestalt";
 
 const CustomModal = ({ isOpen, handleModal, type, children }) => {

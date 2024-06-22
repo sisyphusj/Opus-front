@@ -13,7 +13,7 @@ import {
     searchKeywordState,
 } from "../../atom";
 import {useRecoilState} from "recoil";
-import LoginModal from "../login/LoginModal";
+import LoginModal from "../modals/login_modal/LoginModal";
 import useSnackbar from "../../hooks/useSnackbar";
 import Logo from "./Logo";
 import SearchInput from "./SearchInput";

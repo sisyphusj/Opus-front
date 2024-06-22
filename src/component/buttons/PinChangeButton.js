@@ -4,7 +4,7 @@
  * @component PinChangeButton
  */
 import styled from "styled-components";
-import { CustomButton } from "../CommonModal";
+import { CustomButton } from "../modals/CommonModal";
 
 const ChangeButton = styled(CustomButton)`
   width: 90px;

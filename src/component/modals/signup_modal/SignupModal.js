@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import CustomModal from '../CommonModal';
 import { CustomButton } from '../CommonModal';
-import { ReactComponent as LightLogo } from "../../assets/lightlogo.svg";
+import { ReactComponent as LightLogo } from "../../../assets/lightlogo.svg";
 import SignupInputFields from './SignupInputFields';
-import useSignup from '../../hooks/useSignup';
+import useSignup from '../../../hooks/useSignup';
 import styled from 'styled-components';
 
 const SignupModal = () => {

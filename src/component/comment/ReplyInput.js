@@ -1,7 +1,7 @@
 import React from 'react';
 import { Flex } from "gestalt";
 import { IconButton } from "@mui/material";
-import { CustomInput } from '../CommonModal';
+import { CustomInput } from '../modals/CommonModal';
 import { Close } from "@mui/icons-material";
 
 const ReplyInput = ({ reply, setReply, handleOnKeyDown, handleCloseReply, inputRef }) => (

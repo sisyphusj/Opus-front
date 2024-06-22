@@ -1,4 +1,4 @@
-import CustomModal from "../../CommonModal";
+import CustomModal from "../CommonModal";
 import React, {useCallback, useEffect, useLayoutEffect, useState} from "react";
 import {Mask} from "gestalt";
 import {useRecoilState} from "recoil";

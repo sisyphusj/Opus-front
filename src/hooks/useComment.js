@@ -78,7 +78,7 @@ export const useComment = (comment) => {
                 topLevelCommentId: comment.level === 0 ? comment.commentId : comment.topLevelCommentId,
                 content: reply,
                 level: 1,
-                parentNick: comment.nickname,
+                parentNickname: comment.nickname,
             });
 
             setReply('');
@@ -106,8 +106,8 @@ export const useComment = (comment) => {
 
         try {
             await api.put('/api/pins/comments', {
-                cId: comment.commentId,
-                pId: comment.pinId,
+                commentId: comment.commentId,
+                pinId: comment.pinId,
                 level: comment.level,
                 content: reply,
             });
@@ -135,7 +135,12 @@ export const useComment = (comment) => {
             await getCommentData();
             setCurrentCommentId(null);
         } catch (e) {
-            console.log(e);
+            // console.log(e);
+            if(e.response.status === 500) {
+                showSnackbar('warning', e.response.data.reason);
+                return;
+            }
+
             showSnackbar('error', '댓글을 삭제하는 중 오류가 발생했습니다.');
         }
     }, [comment.commentId, getCommentData, setCurrentCommentId, showSnackbar]);

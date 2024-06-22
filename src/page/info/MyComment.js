@@ -61,7 +61,7 @@ const MyComment = () => {
                     </TableHead>
                     <TableBody>
                         {commentData.map((row) => (
-                            <BaseRow key={row.cid} data={row}/>
+                            <BaseRow key={row.commentId} data={row}/>
                         ))}
                     </TableBody>
                 </Table>

@@ -52,7 +52,7 @@ const CustomModal = ({ isOpen, handleModal, type, children }) => {
                     </ModalContent>
                 ) : type === 'lg' ? (
                     <PinModalContent ref={modalRef} width={dimensions.width} height={dimensions.height}>
-                      <CloseButton handleClose={() => handleModal(false)} absolute />
+                      <CloseButtonAbsolute handleClose={() => handleModal(false)} />
                       <ContentBox>{children}</ContentBox>
                     </PinModalContent>
                 ) : null}
@@ -63,13 +63,35 @@ const CustomModal = ({ isOpen, handleModal, type, children }) => {
   );
 };
 
-const CloseButton = ({ handleClose, absolute = false }) => (
-    <CloseBox absolute={absolute}>
+const CloseButton = ({ handleClose }) => (
+    <CloseBox>
       <IconButton onClick={handleClose}>
         <Close fontSize={'large'} />
       </IconButton>
     </CloseBox>
 );
+
+const CloseButtonAbsolute = ({ handleClose }) => (
+    <CloseBoxAbsolute>
+      <IconButton onClick={handleClose}>
+        <Close fontSize={'large'} />
+      </IconButton>
+    </CloseBoxAbsolute>
+);
+
+const CloseBox = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  position: static;
+`;
+
+const CloseBoxAbsolute = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  position: absolute;
+  right: 20px;
+  z-index: 999;
+`;
 
 export const Background = styled.div`
   position: fixed;
@@ -100,14 +122,6 @@ const PinModalContent = styled.div`
   padding: 20px;
   border-radius: 8px;
   position: relative;
-`;
-
-const CloseBox = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  position: ${({ absolute }) => (absolute ? 'absolute' : 'static')};
-  right: ${({ absolute }) => (absolute ? '20px' : 'auto')};
-  z-index: 999;
 `;
 
 const ContentBox = styled.div`

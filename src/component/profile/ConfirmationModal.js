@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Flex, Heading } from 'gestalt';
 import styled from 'styled-components';
+import {DeleteButton} from "../buttons/ActionButtons";
 
 const ConfirmationModal = ({ message, onConfirm, onCancel }) => (
     <Background>
@@ -8,8 +9,8 @@ const ConfirmationModal = ({ message, onConfirm, onCancel }) => (
             <Heading color="dark" size="400">{message}</Heading>
             <Flex>
                 <Box marginTop={6}>
-                    <ChangeButton onClick={onConfirm}>네</ChangeButton>
-                    <ChangeButton onClick={onCancel} style={{ marginLeft: "20px" }}>아니요</ChangeButton>
+                    <DeleteButton onClick={onConfirm}>네</DeleteButton>
+                    <DeleteButton onClick={onCancel} style={{ marginLeft: "20px" }}>아니요</DeleteButton>
                 </Box>
             </Flex>
         </CheckSaveBox>
@@ -26,6 +27,7 @@ const Background = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 999;
 `;
 
 const CheckSaveBox = styled.div`
@@ -37,21 +39,7 @@ const CheckSaveBox = styled.div`
   justify-content: center;
   align-items: center;
   flex-direction: column;
-`;
-
-const ChangeButton = styled.button`
-  width: 90px;
-  height: 49px;
-  border-radius: 1rem;
-  font-size: 16px;
-  background-color: #f2709c;
-  color: white;
-  border: none;
-  cursor: pointer;
-  
-  &:hover {
-    background-color: #d95d85;
-  }
+  z-index: 1000;
 `;
 
 export default ConfirmationModal;

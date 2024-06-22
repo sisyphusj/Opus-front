@@ -15,31 +15,38 @@ const ActionButtons = ({ setIsSave, setIsDelete }) => (
 
 const SaveButton = styled.button`
   width: 150px;
-  background-color: #f2709c;
-  color: white;
-  border: none;
+  height: 50px;
+  padding: 8px 16px;
+  background-color: transparent;
+  border-radius: 1.5rem;
+  color: #F2709C;
+  font-size: 20px;
+  font-weight: bold;
+  border: 1px solid #F2709C;
   cursor: pointer;
-  font-size: 16px;
-  padding: 10px 20px;
-  border-radius: 1rem;
-  
+  transition: background-color 0.3s ease;
+
   &:hover {
-    background-color: #d95d85;
+    background: #F2709C;
+    color: white;
   }
 `;
 
-const DeleteButton = styled.button`
+export const DeleteButton = styled.button`
   width: 150px;
+  height: 50px;
+  padding: 8px 16px;
   background-color: transparent;
-  color: #f2709c;
-  border: 1px solid #f2709c;
+  border-radius: 1.5rem;
+  color: #ff9472;
+  font-size: 20px;
+  font-weight: bold;
+  border: 1px solid #ff9472;
   cursor: pointer;
-  font-size: 16px;
-  padding: 10px 20px;
-  border-radius: 1rem;
-  
+  transition: background-color 0.3s ease;
+
   &:hover {
-    background-color: #f2709c;
+    background: #ff9472;
     color: white;
   }
 `;

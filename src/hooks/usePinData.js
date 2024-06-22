@@ -54,7 +54,12 @@ const usePinData = () => {
             getPinCommentData();
         } catch (e) {
             console.error(e);
-            showSnackbar('error', '댓글을 등록하는데 실패했습니다.');
+
+            if (e.response.status === 401) {
+                showSnackbar('warning', '로그인이 필요합니다.');
+            } else {
+                showSnackbar('error', '댓글을 등록하는데 실패했습니다.');
+            }
         }
     }, [comment, pinData.pinId, showSnackbar, getPinCommentData]);
 

@@ -15,6 +15,8 @@ const useLogin = () => {
     const {showSnackbar} = useSnackbar();
 
     const login = useCallback(async (handleModal) => {
+
+        // 아이디 또는 비밀번호가 입력되지 않았을 경우
         if (id.trim() === '' || password.trim() === '') {
             showSnackbar('warning', '아이디 또는 비밀번호를 입력해주세요.');
             return;
@@ -31,11 +33,11 @@ const useLogin = () => {
                 sessionStorage.setItem('accessToken', response.data.accessToken);
                 setIsLogin(true);
                 showSnackbar('success', '로그인하였습니다.');
-                handleModal(false); // 로그인 성공 시 모달 닫기
+                handleModal(false);
             }
 
         } catch (e) {
-            if (e.response?.data?.code === "E001") {
+            if (e.response?.data?.code === "A003") {
                 showSnackbar('error', '아이디 또는 비밀번호가 맞지 않습니다.');
             } else {
                 showSnackbar('error', '로그인 중 오류가 발생했습니다.');

@@ -2,8 +2,9 @@ import {useEffect, useRef, useState} from 'react';
 import {Box, Masonry,} from 'gestalt';
 import GridComponent from '../component/GridComponent';
 import api from "../api";
-import {searchKeywordState, snackMessageState, snackOpenState, snackTypeState} from "../atom";
-import {useRecoilState, useRecoilValue} from "recoil";
+import {searchKeywordState} from "../atom";
+import {useRecoilValue} from "recoil";
+import useSnackbar from "../hooks/useSnackbar";
 
 export default function Feed() {
     const [pins, setPins] = useState([]);
@@ -11,35 +12,33 @@ export default function Feed() {
     const scrollContainerRef = useRef();
     const keyword = useRecoilValue(searchKeywordState);
 
-    const [snackbarOpen, setSnackbarOpen] = useRecoilState(snackOpenState);
-    const [snackbarMessage, setSnackbarMessage] = useRecoilState(snackMessageState);
-    const [snackbarType, setSnackbarType] = useRecoilState(snackTypeState);
-
-    const handleSnackBar = (type, msg) => {
-        setSnackbarType(type);
-        setSnackbarMessage(msg);
-        setSnackbarOpen(true);
-    }
+    const {showSnackbar} = useSnackbar();
 
     const getPins = async (n, keyword) => {
 
-        if (keyword === null) keyword = '';
+        if (keyword === null) {
+            keyword = '';
+        }
 
         try {
-            const response = await api.get(`/api/pins?offset=${n.from}&amount=4&keyword=${keyword}`)
+            const response = await api.get(
+                `/api/pins?offset=${n.from}&amount=4&keyword=${keyword}`)
             console.log(response);
             return Promise.resolve(response.data);
         } catch (error) {
             console.error(error);
-            handleSnackBar('error', '핀을 불러오는데 실패했습니다.');
+            showSnackbar('error', '핀을 불러오는데 실패했습니다.');
         }
 
     }
 
     const getTotalCount = async (keyword) => {
         try {
-            if (keyword === null) keyword = '';
-            const response = await api.get(`/api/pins/total?keyword=${keyword}`);
+            if (keyword === null) {
+                keyword = '';
+            }
+            const response = await api.get(
+                `/api/pins/total?keyword=${keyword}`);
             console.log(response.data);
             setTotal(response.data);
         } catch (error) {
@@ -64,13 +63,8 @@ export default function Feed() {
     }, [keyword]);
 
     return (
-        <Box marginTop={10} minHeight={"calc(100vh - 162px)"} overflow={"hidden"}
-            // ref={(e) => {
-            //     scrollContainerRef.current = e;
-            // }}
-            /**
-            * 스크롤 컨테이너 지정 관련 수정 필요
-            */
+        <Box marginTop={10} minHeight={"calc(100vh - 162px)"}
+             overflow={"hidden"}
              ref={scrollContainerRef}
 
         >

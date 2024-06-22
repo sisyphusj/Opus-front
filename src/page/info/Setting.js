@@ -1,11 +1,9 @@
 import {Box, FixedZIndex, Flex, Sticky, Tabs} from "gestalt";
 import {useEffect, useLayoutEffect, useRef, useState} from "react";
-import MyProfile from "./MyProfile";
-import MyLibrary from "./MyLibrary";
 import {Outlet, useNavigate} from "react-router-dom";
-import {isLoginState, snackMessageState, snackOpenState, snackTypeState} from "../../atom";
-import {useRecoilState, useRecoilValue} from "recoil";
-
+import {isLoginState} from "../../atom";
+import {useRecoilValue} from "recoil";
+import useSnackbar from "../../hooks/useSnackbar";
 
 export default function Setting() {
     const navigate = useNavigate();
@@ -15,17 +13,7 @@ export default function Setting() {
     const tabRef3 = useRef(null);
     const customZIndex = new FixedZIndex(1);
     const isLogin = useRecoilValue(isLoginState);
-
-    const [snackbarOpen, setSnackbarOpen] = useRecoilState(snackOpenState);
-    const [snackbarMessage, setSnackbarMessage] = useRecoilState(snackMessageState);
-    const [snackbarType, setSnackbarType] = useRecoilState(snackTypeState);
-
-    const handleSnackBar = (type, msg) => {
-        setSnackbarType(type);
-        setSnackbarMessage(msg);
-        setSnackbarOpen(true);
-    }
-
+    const {showSnackbar} = useSnackbar();
 
     useLayoutEffect(() => {
         tabRef1.current.querySelector('.tBJ').style.fontSize = "18px";
@@ -51,7 +39,7 @@ export default function Setting() {
     useEffect(() => {
 
         if (!isLogin) {
-            handleSnackBar('warning', '로그인 후 이용해주세요.');
+            showSnackbar('warning', '로그인 후 이용해주세요.');
             return (navigate('/'));
         }
 
@@ -71,7 +59,8 @@ export default function Setting() {
                     <Sticky top={122}>
                         <Box width={100} marginEnd={7} height={150}>
                             <Tabs activeTabIndex={activeIndex}
-                                  onChange={({activeTabIndex}) => handleTabClick(activeTabIndex)} tabs={[
+                                  onChange={({activeTabIndex}) => handleTabClick(
+                                      activeTabIndex)} tabs={[
                                 {text: 'profile', ref: tabRef1},
                                 {text: 'my Library', ref: tabRef2},
                                 {text: 'my Comment', ref: tabRef3}

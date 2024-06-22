@@ -89,7 +89,8 @@ export default function ImageGenerator() {
             height: imageSize[1],
             image_quality: imgQuality,
             guidance_scale: guidanceScale,
-            samples: samples
+            samples: samples,
+            seed : Array.from({ length: samples }, () => Number(seed))
         };
 
         try {
@@ -185,9 +186,7 @@ export default function ImageGenerator() {
                     <ImageControls
                         direction={direction}
                         customWidth={customWidth}
-                        imgQuality={imgQuality}
                         setImgQuality={setImgQuality}
-                        guidanceScale={guidanceScale}
                         setGuidanceScale={setGuidanceScale}
                         seed={seed}
                         setSeed={setSeed}

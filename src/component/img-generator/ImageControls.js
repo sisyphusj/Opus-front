@@ -12,9 +12,7 @@ const Label = styled.h3`
 const ImageControls = ({
     direction,
     customWidth,
-    imgQuality,
     setImgQuality,
-    guidanceScale,
     setGuidanceScale,
     seed,
     setSeed,

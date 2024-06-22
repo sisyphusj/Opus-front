@@ -2,7 +2,7 @@
  * PinDetails.js
  * @description PinModal 의 공통 부분 중 상세 정보를 보여주는 컴포넌트
  */
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Box, Flex, Heading} from "gestalt";
 import {
     Accordion,
@@ -17,6 +17,12 @@ import NickLabel from "../../labels/PinNickLabel";
 import PinImage from "./PinImage";
 import {Background, CustomInput} from "../CommonModal";
 import styled from "styled-components";
+import {IconButton} from "@mui/material";
+import {Favorite, FavoriteBorder} from "@mui/icons-material";
+import useSSE from "../../../hooks/useSSE";
+import {QueryClient} from "react-query";
+import {useRecoilValue} from "recoil";
+import {isLoginState} from "../../../atom";
 
 const PinDetails = React.memo(({
     direction,
@@ -24,13 +30,16 @@ const PinDetails = React.memo(({
     isMyPin,
     isDelete,
     setIsDelete,
-    deletePin,
     commentList,
     comment,
     setComment,
     handleOnKeyDown,
+    handleFavorite,
+    isLike,
     handleDeleteConfirm
 }) => {
+    const {likeCount} = useSSE(QueryClient);
+    const isLogin = useRecoilValue(isLoginState);
     return (
         <Flex width={"100%"} height={"100%"} direction={direction}>
             <Box width={"100%"} height={"100%"}>
@@ -45,6 +54,10 @@ const PinDetails = React.memo(({
                       height={"100%"}>
                     <Flex>
                         <NickLabel>User {pinData.nickname}</NickLabel>
+                        <IconButton style={{marginBottom : "10px"}} onClick={() => handleFavorite()}>
+                            {isLike ? <Favorite fontSize="medium" color="error"/> : <FavoriteBorder fontSize="medium" color="error"/> }
+                        </IconButton>
+                        {isLogin && likeCount}
                         {isMyPin && (
                             <DeleteButton onClick={() => setIsDelete(
                                 true)}> delete </DeleteButton>

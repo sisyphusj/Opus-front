@@ -13,6 +13,8 @@ import {
     MODAL_WIDTH_MEDIUM, MODAL_WIDTH_SMALL
 } from "../../../constants/modalDimensions";
 import {PinContainer} from "../../../styles/PinContainerStyle";
+import {QueryClient} from "react-query";
+import useSSE from "../../../hooks/useSSE";
 
 export default function PinModal() {
 
@@ -20,6 +22,7 @@ export default function PinModal() {
     const [direction, setDirection] = useState('row');
     const [isDelete, setIsDelete] = useState(false);
     const [isMyPin, setIsMyPin] = useState(false);
+
 
     const [w, setW] = useState("1200px");
     const [h, setH] = useState("700px");
@@ -32,7 +35,9 @@ export default function PinModal() {
         setComment,
         nickname,
         getPinCommentData,
-        submitComment
+        submitComment,
+        handleFavorite,
+        isLike
     } = usePinData();
 
     /**
@@ -124,12 +129,13 @@ export default function PinModal() {
                         isMyPin={isMyPin}
                         isDelete={isDelete}
                         setIsDelete={setIsDelete}
-                        deletePin={deletePin}
                         commentList={commentList}
                         comment={comment}
                         setComment={setComment}
                         handleOnKeyDown={handleOnKeyDown}
-                        handleDeleteConfirm={deletePin} // 삭제 확인 핸들러
+                        handleFavorite={handleFavorite}
+                        isLike={isLike}
+                        handleDeleteConfirm={deletePin}
                     />
                 </PinContainer>
             </Mask>

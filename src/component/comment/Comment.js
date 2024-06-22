@@ -1,13 +1,14 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Collapse, IconButton, Button } from "@mui/material";
-import { ReactComponent as ChatIcon } from "../../assets/chat.svg";
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {Collapse, IconButton, Button} from "@mui/material";
+import {ReactComponent as ChatIcon} from "../../assets/chat.svg";
 import styled from "styled-components";
-import { useComment } from "../../hooks/useComment";
-import { formatDate } from "../../utils/dateUtils";
+import {useComment} from "../../hooks/useComment";
+import {formatDate} from "../../utils/dateUtils";
 import ReplyInput from "./ReplyInput";
 import MoreOptions from "./MoreOptions";
+import {Favorite, FavoriteBorder} from "@mui/icons-material";
 
-const Comment = React.memo(({ comment, comments }) => {
+const Comment = React.memo(({comment, comments}) => {
     const {
         isLogin,
         isReplyOpen,
@@ -23,9 +24,13 @@ const Comment = React.memo(({ comment, comments }) => {
         submitReply,
         updateComment,
         deleteComment,
+        handleLike,
+        isLike,
+        countLike
     } = useComment(comment);
 
-    const replies = comments.filter(reply => reply.topLevelCommentId === comment.commentId);
+    const replies = comments.filter(
+        reply => reply.topLevelCommentId === comment.commentId);
 
     const [open, setOpen] = useState(false);
 
@@ -67,10 +72,11 @@ const Comment = React.memo(({ comment, comments }) => {
      */
     const handleOnKeyDown = (key) => {
         if (key === 'Enter') {
-            if (isUpdateOpen)
+            if (isUpdateOpen) {
                 updateComment();
-            else
+            } else {
                 submitReply();
+            }
         }
     };
 
@@ -88,7 +94,8 @@ const Comment = React.memo(({ comment, comments }) => {
     const scrollToMiddle = () => {
         if (containerRef.current && inputRef.current) {
             const containerHeight = containerRef.current.clientHeight;
-            const inputPosition = inputRef.current.getBoundingClientRect().top - containerRef.current.getBoundingClientRect().top;
+            const inputPosition = inputRef.current.getBoundingClientRect().top
+                - containerRef.current.getBoundingClientRect().top;
             containerRef.current.scrollTo({
                 top: inputPosition - containerHeight / 2,
                 behavior: 'smooth'
@@ -105,7 +112,8 @@ const Comment = React.memo(({ comment, comments }) => {
     }, [comment.createdDate, comment.updatedDate]);
 
     useEffect(() => {
-        if (isReplyOpen && comment.commentId === currentCommentId && inputRef.current) {
+        if (isReplyOpen && comment.commentId === currentCommentId
+            && inputRef.current) {
             scrollToMiddle();
             inputRef.current.focus();
         }
@@ -114,7 +122,7 @@ const Comment = React.memo(({ comment, comments }) => {
     return (
         <>
             <CommentContainer $level={comment.level}>
-                <Nick style={{ marginRight: "5px" }}>{comment.nickname}</Nick>
+                <Nick style={{marginRight: "5px"}}>{comment.nickname}</Nick>
                 <CommentLine>
                     <div style={{
                         width: "300px",
@@ -122,17 +130,19 @@ const Comment = React.memo(({ comment, comments }) => {
                         whiteSpace: "normal"
                     }}>
 
-                        {comment.parentNickname ? <div style={{color : "#F2709C"}}> @{comment.parentNickname} </div> : null}
+                        {comment.parentNickname ? <div
+                                style={{color: "#F2709C"}}> @{comment.parentNickname} </div>
+                            : null}
                         {comment.content}
 
                     </div>
-                    <div style={{ display: "flex" }}>
-                        <div style={{ marginTop: "10px" }}>
+                    <div style={{display: "flex"}}>
+                        <div style={{marginTop: "10px"}}>
                             {currentDate}
                         </div>
 
                         <IconButton onClick={() => handleReplyButton(comment)}>
-                            <ChatIcon />
+                            <ChatIcon/>
                         </IconButton>
 
                         {isLogin && nickname === comment.nickname && (
@@ -141,7 +151,8 @@ const Comment = React.memo(({ comment, comments }) => {
                                 anchorRef={anchorRef}
                                 handleToggle={handleToggle}
                                 handleClose={handleClose}
-                                handleUpdateButton={() => handleUpdateButton(comment)}
+                                handleUpdateButton={() => handleUpdateButton(
+                                    comment)}
                                 deleteComment={deleteComment}
                             />
                         )}
@@ -156,26 +167,42 @@ const Comment = React.memo(({ comment, comments }) => {
                         />
                     }
                 </CommentLine>
+
+                <div style={{marginTop : "20px", display : "flex", alignItems : "center", justifyContent : "center"}}>
+                    <IconButton style={{height: "40px"}}
+                                onClick={() => handleLike()}>
+                        {isLike ? <Favorite fontSize="small" color="error"/> :
+                            <FavoriteBorder fontSize="small" color="error"/>}
+                    </IconButton>
+                    {countLike}
+                </div>
             </CommentContainer>
 
             {comment.level === 0 ? (
                 <>
                     {replies.length > 0 && (
-                        <Button size={"small"} variant={"text"} onClick={handleShowAllReplies} style={{ marginLeft: "55px" }}>
-                            {showAllReplies ? '숨기기' : `모든 대댓글 보기 (${comments.filter(reply => reply.topLevelCommentId === comment.commentId).length})`}
+                        <Button size={"small"} variant={"text"}
+                                onClick={handleShowAllReplies}
+                                style={{marginLeft: "55px"}}>
+                            {showAllReplies ? '숨기기'
+                                : `모든 대댓글 보기 (${comments.filter(
+                                    reply => reply.topLevelCommentId
+                                        === comment.commentId).length})`}
                         </Button>
                     )}
 
                     <Collapse in={showAllReplies}>
                         {replies.map((reply) => (
-                            <Comment key={reply.commentId} comment={reply} comments={comments} />
+                            <Comment key={reply.commentId} comment={reply}
+                                     comments={comments}/>
                         ))}
                     </Collapse>
                 </>
             ) : (
                 <>
                     {replies.map((reply) => (
-                        <Comment key={reply.commentId} comment={reply} comments={comments} />
+                        <Comment key={reply.commentId} comment={reply}
+                                 comments={comments}/>
                     ))}
                 </>
             )}

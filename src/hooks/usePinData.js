@@ -14,6 +14,7 @@ const usePinData = () => {
     const [commentList, setCommentList] = useRecoilState(commentListState);
     const [comment, setComment] = useState('');
     const [nickname, setNickname] = useState('');
+    const [isLike, setIsLike] = useState(false);
     const isLogin = useRecoilValue(isLoginState);
     const {showSnackbar} = useSnackbar();
 
@@ -77,11 +78,54 @@ const usePinData = () => {
     }, []);
 
     /**
+     * 좋아요 추가 함수
+     */
+    const handleLike = useCallback(async () => {
+
+        if (isLike) {
+            try {
+                const response = await api.delete(
+                    `/api/likes/pin/${pinData.pinId}`);
+                response.status === 200 && setIsLike(false);
+            } catch (e) {
+                console.error(e);
+                showSnackbar('error', '좋아요 해제에 실패했습니다.');
+            }
+        } else {
+            try {
+                const response = await api.post(`/api/likes/pin`, {
+                    pinId: pinData.pinId
+                });
+
+                response.status === 200 && setIsLike(true);
+            } catch (e) {
+                console.error(e);
+                showSnackbar('error', '좋아요 추가에 실패했습니다.');
+            }
+        }
+    }, [pinData.pinId, isLike]);
+
+    /**
+     * 좋아요 중인지 체크하는 함수
+     */
+    const checkFavorite = async () => {
+        try {
+            const response = await api.get(
+                `/api/likes/check/pin/${pinData.pinId}`);
+
+            setIsLike(response.data);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    /**
      * 로그인 상태일 때 닉네임을 불러옴
      */
     useEffect(() => {
         if (isLogin && getCookieToken()) {
             getNickname();
+            checkFavorite();
         }
     }, [isLogin, getNickname]);
 
@@ -99,7 +143,9 @@ const usePinData = () => {
         setComment,
         nickname,
         getPinCommentData,
-        submitComment
+        submitComment,
+        handleFavorite: handleLike,
+        isLike: isLike,
     };
 };
 

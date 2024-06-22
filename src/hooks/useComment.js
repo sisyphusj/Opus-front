@@ -15,12 +15,14 @@ export const useComment = (comment) => {
     const isLogin = useRecoilValue(isLoginState);
     const [isReplyOpen, setIsReplyOpen] = useRecoilState(isReplyOpenState);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+    const [isLike, setIsLike] = useState(false);
 
     const [reply, setReply] = useState('');
     const [, setCommentList] = useRecoilState(commentListState);
     const pinData = useRecoilValue(currentPinState);
     const [currentCommentId, setCurrentCommentId] = useRecoilState(currentReplyState);
     const [nickname, setNickname] = useState('');
+    const [countLike, setCountLike] = useState(0);
 
     const {showSnackbar} = useSnackbar();
 
@@ -157,11 +159,72 @@ export const useComment = (comment) => {
         }
     };
 
+    /**
+     * 좋아요 추가 함수
+     */
+    const handleLike = useCallback(async () => {
+
+        if (isLike) {
+            try {
+                const response = await api.delete(
+                    `/api/likes/comment/${comment.commentId}`);
+                response.status === 200 && setIsLike(false);
+            } catch (e) {
+                console.error(e);
+                showSnackbar('error', '좋아요 해제에 실패했습니다.');
+            }
+        } else {
+            try {
+                const response = await api.post(`/api/likes/comment`, {
+                    commentId: comment.commentId
+                });
+
+                response.status === 200 && setIsLike(true);
+            } catch (e) {
+                if(e.response.status === 401) {
+                    showSnackbar('warning', '로그인이 필요합니다.');
+                } else{
+                    showSnackbar('error', '좋아요 추가에 실패했습니다.');
+                }
+            }
+        }
+    }, [pinData.pinId, isLike]);
+
+    /**
+     * 좋아요 중인지 체크하는 함수
+     */
+    const checkFavorite = async () => {
+        try {
+            const response = await api.get(
+                `/api/likes/check/comment/${comment.commentId}`);
+
+            setIsLike(response.data);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    const getCountLike = async () => {
+        try {
+            const response = await api.get(
+                `/api/likes/comment/${comment.commentId}`);
+            
+            setCountLike(response.data);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
     useEffect(() => {
         if (isLogin && getCookieToken()) {
             getNickname();
+            checkFavorite();
         }
     }, [isLogin]);
+
+    useEffect(() => {
+        getCountLike();
+    }, []);
 
     return {
         isLogin,
@@ -178,5 +241,8 @@ export const useComment = (comment) => {
         submitReply,
         updateComment,
         deleteComment,
+        handleLike,
+        isLike,
+        countLike,
     };
 };

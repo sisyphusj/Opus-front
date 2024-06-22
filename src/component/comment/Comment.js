@@ -113,14 +113,19 @@ const Comment = React.memo(({ comment, comments }) => {
 
     return (
         <>
-            <CommentContainer level={comment.level}>
+            <CommentContainer $level={comment.level}>
                 <Nick style={{ marginRight: "5px" }}>{comment.nickname}</Nick>
                 <CommentLine>
                     <div style={{
                         width: "300px",
                         wordWrap: "break-word",
                         whiteSpace: "normal"
-                    }}>{comment.parentNickname && <>@{comment.parentNickname}</>} {comment.content}</div>
+                    }}>
+
+                        {comment.parentNickname ? <div> @{comment.parentNickname} </div> : null}
+                        {comment.content}
+
+                    </div>
                     <div style={{ display: "flex" }}>
                         <div style={{ marginTop: "10px" }}>
                             {currentDate}
@@ -182,7 +187,7 @@ export default Comment;
 
 const CommentContainer = styled.div`
   display: flex;
-  margin-left: ${props => `${props.level * 20}px`};
+  margin-left: ${props => `${props.$level * 20}px`};
   margin-top: 15px;
 `;
 

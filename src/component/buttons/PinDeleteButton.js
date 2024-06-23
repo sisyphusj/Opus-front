@@ -9,7 +9,7 @@ const PinDeleteButton = styled.button`
   width: 100px;
   height: 30px;
   margin-left: 40px;
-  margin-top: 4px;
+  margin-top: 5px;
   background-color: transparent;
   border-radius: 1.5rem;
   color: #ff9472;

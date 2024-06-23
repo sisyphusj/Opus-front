@@ -188,6 +188,7 @@ export const useComment = (comment) => {
                 }
             }
         }
+        await getCountLike();
     }, [pinData.pinId, isLike]);
 
     /**
@@ -204,6 +205,9 @@ export const useComment = (comment) => {
         }
     }
 
+    /**
+     * 좋아요 개수를 불러오는 함수
+     */
     const getCountLike = async () => {
         try {
             const response = await api.get(

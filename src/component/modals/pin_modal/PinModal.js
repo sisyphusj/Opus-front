@@ -13,8 +13,6 @@ import {
     MODAL_WIDTH_MEDIUM, MODAL_WIDTH_SMALL
 } from "../../../constants/modalDimensions";
 import {PinContainer} from "../../../styles/PinContainerStyle";
-import {QueryClient} from "react-query";
-import useSSE from "../../../hooks/useSSE";
 
 export default function PinModal() {
 
@@ -36,7 +34,7 @@ export default function PinModal() {
         nickname,
         getPinCommentData,
         submitComment,
-        handleFavorite,
+        handleLike,
         isLike
     } = usePinData();
 
@@ -133,7 +131,7 @@ export default function PinModal() {
                         comment={comment}
                         setComment={setComment}
                         handleOnKeyDown={handleOnKeyDown}
-                        handleFavorite={handleFavorite}
+                        handleLike={handleLike}
                         isLike={isLike}
                         handleDeleteConfirm={deletePin}
                     />

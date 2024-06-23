@@ -1,24 +1,42 @@
 import { useEffect, useState } from 'react';
 import { useRecoilValue } from 'recoil';
 import { currentPinState, isLoginState } from '../atom';
-import axios from 'axios';
 import { EventSourcePolyfill } from 'event-source-polyfill';
-import { getCookieToken } from '../Cookies';
+import api from "../api";
 
 const useSSE = () => {
     const pinData = useRecoilValue(currentPinState);
     const [likeCount, setLikeCount] = useState(0);
     const isLogin = useRecoilValue(isLoginState);
-    const [retryCount, setRetryCount] = useState(0); // 재시도 카운터 추가
+
+    /**
+     * 좋아요 개수를 불러오는 함수
+     */
+    const getCountLike = async () => {
+        try {
+            const response = await api.get(`/api/likes/pin/${pinData.pinId}`);
+            setLikeCount(response.data);
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
     useEffect(() => {
         if (!pinData || !isLogin) return;
 
+        getCountLike();
+
         const accessToken = sessionStorage.getItem('accessToken');
+        let eventSource;
 
         // SSE 연결 설정 함수
         const connectSSE = (token) => {
-            const eventSource = new EventSourcePolyfill(
+            // 기존의 SSE 연결이 있다면 정리
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            eventSource = new EventSourcePolyfill(
                 `http://localhost:8080/api/like-subscribe/subscribe/${pinData.pinId}`,
                 {
                     headers: {
@@ -58,47 +76,24 @@ const useSSE = () => {
 
             eventSource.onopen = () => {
                 console.log('SSE connection opened');
-                setRetryCount(0); // 성공적으로 연결되면 재시도 카운터 초기화
             };
 
             eventSource.onerror = async (event) => {
                 console.error('SSE connection error:', event);
-                eventSource.close();
 
-                // JWT 토큰 재발급 로직
-                if (retryCount < 2 || event.status === 401) {
-                    try {
-                        const response = await axios.post(
-                            'http://localhost:8080/api/auth/reissue-token',
-                            {
-                                accessToken: token,
-                                refreshToken: getCookieToken(),
-                            },
-                            {
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                            }
-                        );
+                // 오류 처리 - 상태 코드 확인
+                const status = event.target.readyState === EventSource.CLOSED ? 500 : 401;
 
-                        if (response.status === 200) {
-                            const newToken = response.data.accessToken;
-                            sessionStorage.setItem('accessToken', newToken);
-                            setRetryCount(0); // 새로운 토큰으로 재연결되면 카운터 초기화
-                            connectSSE(newToken); // 새로운 토큰으로 재연결
-                            console.log('Token refreshed successfully');
-                        } else {
-                            setRetryCount(retryCount + 1); // 재발급 실패 시 재시도 카운터 증가
-                        }
-                    } catch (error) {
-                        setRetryCount(retryCount + 1);
-                        console.error('Error refreshing token:', error);
-                    }
+                if (status === 401) {
+                    console.log('Token expired, fetching new token via getCountLike');
+                    // 401 오류 시 `getCountLike` 호출하여 재발급 로직 활용
+                    await getCountLike();
+                } else if (status === 500) {
+                    console.log('Server error, closing SSE connection and cleaning up');
+                    // 500 서버 오류 처리: 모든 SSE 연결 종료
+                    await cleanup();
                 } else {
-                    console.error('Maximum retry attempts reached or not a 401 error');
-                    if (eventSource) {
-                        eventSource.close();
-                    }
+                    console.error('Unhandled error or maximum retry attempts reached');
                 }
             };
 
@@ -106,22 +101,18 @@ const useSSE = () => {
         };
 
         // 초기 SSE 연결 설정
-        const eventSource = connectSSE(accessToken);
+        eventSource = connectSSE(accessToken);
 
         // SSE 연결 해제 및 서버에 구독 해제 요청
         const cleanup = async () => {
             console.log('Cleaning up SSE connection');
             if (eventSource) {
                 eventSource.close();
+                eventSource = null;
             }
             try {
-                const response = await axios.delete(
-                    `http://localhost:8080/api/like-subscribe/unsubscribe/${pinData.pinId}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${accessToken}`,
-                        },
-                    }
+                const response = await api.delete(
+                    `/api/like-subscribe/unsubscribe/${pinData.pinId}`
                 );
                 if (response.status === 200) {
                     console.log('Unsubscribed from SSE');

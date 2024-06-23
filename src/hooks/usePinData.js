@@ -103,6 +103,7 @@ const usePinData = () => {
                 showSnackbar('error', '좋아요 추가에 실패했습니다.');
             }
         }
+       await broadcastLike();
     }, [pinData.pinId, isLike]);
 
     /**
@@ -114,6 +115,32 @@ const usePinData = () => {
                 `/api/likes/check/pin/${pinData.pinId}`);
 
             setIsLike(response.data);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    /**
+     * 좋아요 개수를 불러오는 함수
+     */
+    const getCountLike = async () => {
+        try {
+            const response = await api.get(
+                `/api/likes/pin/${pinData.pinId}`);
+            console.log(response);
+            return response.data;
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    const broadcastLike = async () => {
+        try {
+            const response = await api.post(
+                `/api/like-subscribe/broadcast`, {
+                    pinId: pinData.pinId
+                });
+            console.log(response);
         } catch (e) {
             console.error(e);
         }
@@ -144,8 +171,9 @@ const usePinData = () => {
         nickname,
         getPinCommentData,
         submitComment,
-        handleFavorite: handleLike,
-        isLike: isLike,
+        handleLike,
+        isLike,
+        getCountLike,
     };
 };
 

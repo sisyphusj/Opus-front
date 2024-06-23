@@ -23,6 +23,7 @@ import useSSE from "../../../hooks/useSSE";
 import {QueryClient} from "react-query";
 import {useRecoilValue} from "recoil";
 import {isLoginState} from "../../../atom";
+import LikeCounter from "./LikeCounter";
 
 const PinDetails = React.memo(({
     direction,
@@ -34,9 +35,9 @@ const PinDetails = React.memo(({
     comment,
     setComment,
     handleOnKeyDown,
-    handleFavorite,
+    handleLike,
     isLike,
-    handleDeleteConfirm
+    handleDeleteConfirm,
 }) => {
     const {likeCount} = useSSE(QueryClient);
     const isLogin = useRecoilValue(isLoginState);
@@ -54,10 +55,10 @@ const PinDetails = React.memo(({
                       height={"100%"}>
                     <Flex>
                         <NickLabel>User {pinData.nickname}</NickLabel>
-                        <IconButton style={{marginBottom : "10px"}} onClick={() => handleFavorite()}>
+                        <IconButton style={{marginBottom : "10px"}} onClick={() => handleLike()}>
                             {isLike ? <Favorite fontSize="medium" color="error"/> : <FavoriteBorder fontSize="medium" color="error"/> }
                         </IconButton>
-                        {isLogin && likeCount}
+                        {isLogin && <LikeCounter likeCount={likeCount}/>}
                         {isMyPin && (
                             <DeleteButton onClick={() => setIsDelete(
                                 true)}> delete </DeleteButton>
@@ -135,22 +136,6 @@ const PinDetails = React.memo(({
     );
 });
 
-const Container = styled.div`
-  width: 100%;
-  height: 100%;
-  min-height: 650px;
-  overflow: auto;
-  z-index: 998;
-
-  &::-webkit-scrollbar {
-    width: 0;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    display: none;
-  }
-`;
-
 const CheckSaveBox = styled.div`
   width: 450px;
   height: 200px;
@@ -173,7 +158,6 @@ const CommentContainer = styled.div`
   margin-left: 14px;
   width: 100%;
   height: 100%;
-  //max-height: 250px;
   overflow: auto;
 
   &::-webkit-scrollbar {

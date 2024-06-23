@@ -145,6 +145,21 @@ const Comment = React.memo(({comment, comments}) => {
                             <ChatIcon/>
                         </IconButton>
 
+                        <div style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center"
+                        }}>
+                            <IconButton style={{height: "40px"}}
+                                        onClick={() => handleLike()}>
+                                {isLike ? <Favorite fontSize="small"
+                                                    color="error"/> :
+                                    <FavoriteBorder fontSize="small"
+                                                    color="error"/>}
+                            </IconButton>
+                            {countLike}
+                        </div>
+
                         {isLogin && nickname === comment.nickname && (
                             <MoreOptions
                                 open={open}
@@ -156,6 +171,8 @@ const Comment = React.memo(({comment, comments}) => {
                                 deleteComment={deleteComment}
                             />
                         )}
+
+
                     </div>
                     {isReplyOpen && comment.commentId === currentCommentId &&
                         <ReplyInput
@@ -167,15 +184,6 @@ const Comment = React.memo(({comment, comments}) => {
                         />
                     }
                 </CommentLine>
-
-                <div style={{marginTop : "20px", display : "flex", alignItems : "center", justifyContent : "center"}}>
-                    <IconButton style={{height: "40px"}}
-                                onClick={() => handleLike()}>
-                        {isLike ? <Favorite fontSize="small" color="error"/> :
-                            <FavoriteBorder fontSize="small" color="error"/>}
-                    </IconButton>
-                    {countLike}
-                </div>
             </CommentContainer>
 
             {comment.level === 0 ? (

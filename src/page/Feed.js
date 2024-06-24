@@ -58,7 +58,7 @@ export default function Feed() {
     }, [hasMore, loading, keyword, pins.length, total]);
 
     return (
-        <Box marginTop={"10px"} minHeight={"calc(100vh - 162px)"}
+        <Box marginTop={"10px"} minHeight={"calc(100vh - 132px)"}
              height={`calc(100vh - 162px)`} // 헤더 높이만큼 빼서 맞춤
              style={{
                  overflowX: "hidden", overflowY: "auto",

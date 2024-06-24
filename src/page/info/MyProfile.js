@@ -1,14 +1,15 @@
 import React, {useEffect, useRef, useState, useCallback} from "react";
-import {Box, Heading} from "gestalt";
+import {Box, Flex, Heading} from "gestalt";
 import api from "../../api";
 import {useRecoilState} from "recoil";
-import {isLoginState} from "../../atom";
+import {isEditState, isLoginState} from "../../atom";
 import {useNavigate} from "react-router-dom";
 import {removeCookieToken} from "../../Cookies";
 import ProfileFields from "../../component/profile/ProfileFields";
 import ActionButtons from "../../component/buttons/ActionButtons";
 import ConfirmationModal from "../../component/profile/ConfirmationModal";
 import useSnackbar from "../../hooks/useSnackbar";
+import ConfirmPasswordModal from "../../component/profile/ConfirmPasswordModal";
 
 export default function MyProfile() {
     const navigate = useNavigate();
@@ -22,6 +23,7 @@ export default function MyProfile() {
     const newPwFieldRef = useRef(null);
     const nicknameFieldRef = useRef(null);
     const emailFieldRef = useRef(null);
+    const confirmPwFieldRef = useRef(null);
 
     const [id, setId] = useState('');
     const [password, setPassword] = useState('');
@@ -30,6 +32,9 @@ export default function MyProfile() {
     const [email, setEmail] = useState('');
 
     const {showSnackbar} = useSnackbar();
+    const [isEdit, setIsEdit] = useRecoilState(isEditState);
+    const [isCorrect, setIsCorrect] = useState(false);
+
     // 프로필 불러오기
     const getProfile = async () => {
         try {
@@ -39,6 +44,7 @@ export default function MyProfile() {
             setNickname(response.data.nickname);
             setEmail(response.data.email);
             setPassword(response.data.password); // 기존 비밀번호 설정
+
         } catch (e) {
             console.log(e);
             showSnackbar('error', '프로필을 불러오는데 실패했습니다.');
@@ -49,21 +55,45 @@ export default function MyProfile() {
     const submitProfile = async () => {
         if (!id || !nickname || !email || (changePw && !newPassword)) {
             showSnackbar('error', '입력값을 확인하세요');
+            setIsSave(false);
             return;
+        }
+
+        if(password !== newPassword) {
+            showSnackbar('error', '비밀번호가 일치하지 않습니다.');
+            setIsSave(false);
+            return;
+
         }
 
         try {
             await api.put('/api/member', {
-                username: id,
-                password: changePw ? newPassword : password, // 변경된 비밀번호 또는 기존 비밀번호 사용
+                password: changePw ? newPassword : null,
                 nickname: nickname,
                 email: email,
             });
 
             setIsSave(false);
+            setIsEdit(false);
+            setIsCorrect(false);
+            setChangePw(false);
+            setNewPassword('');
+            setPassword('');
             showSnackbar('success', '프로필이 성공적으로 저장되었습니다.');
         } catch (e) {
             console.log(e);
+            setIsSave(false);
+
+            if(e.response.status === 500 && e.response.data.reason === "닉네임 중복") {
+                showSnackbar('warning', '이미 존재하는 닉네임입니다.');
+                return;
+            }
+
+            if(e.response.status === 500 && e.response.data.reason === "이메일 중복") {
+                showSnackbar('warning', '이미 존재하는 이메일입니다.');
+                return;
+            }
+
             showSnackbar('error', '프로필을 저장하는데 실패했습니다.');
         }
     };
@@ -131,6 +161,7 @@ export default function MyProfile() {
                 email={email}
                 setEmail={setEmail}
                 changePw={changePw}
+                setChangePw={setChangePw}
                 handelChangeButton={handelChangeButton}
                 handleFieldBorder={handleFieldBorder}
                 idFieldRef={idFieldRef}
@@ -138,11 +169,24 @@ export default function MyProfile() {
                 newPwFieldRef={newPwFieldRef}
                 nicknameFieldRef={nicknameFieldRef}
                 emailFieldRef={emailFieldRef}
+                isEdit={isEdit}
+                setIsEdit={setIsEdit}
+                setIsCorrect={setIsCorrect}
             />
 
             <ActionButtons setIsSave={setIsSave} setIsDelete={setIsDelete}/>
 
-            {isSave && (
+            {isEdit && !isCorrect &&(
+                <ConfirmPasswordModal
+                    message="비밀번호 확인"
+                    setIsCorrect={setIsCorrect}
+                    onCancel={() => setIsEdit(false)}
+                    handleFieldBorder={handleFieldBorder}
+                    confirmPwFieldRef={confirmPwFieldRef}
+                />
+            )}
+
+            {isSave && isEdit && (
                 <ConfirmationModal
                     message="변경사항을 저장하시겠습니까?"
                     onConfirm={submitProfile}

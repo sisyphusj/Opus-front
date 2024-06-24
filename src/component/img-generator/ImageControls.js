@@ -15,7 +15,7 @@ const ImageControls = ({
     setImgQuality,
     setGuidanceScale,
     seed,
-    setSeed,
+    handleSeedChange,
     samples,
     setSamples,
     openArray,
@@ -67,11 +67,10 @@ const ImageControls = ({
                         <Label>Seed</Label>
                         <TextField
                             id="seed"
-                            onChange={(v) => setSeed(v.value)}
+                            onChange={handleSeedChange}
                             autoComplete="off"
                             size="md"
                             value={seed}
-                            placeholder="random seed = -1"
                             ref={seedFieldRef}
                             onFocus={() => handleFieldBorder(seedFieldRef, true)}
                             onBlur={() => handleFieldBorder(seedFieldRef, false)}

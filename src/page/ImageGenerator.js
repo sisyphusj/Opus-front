@@ -6,7 +6,6 @@ import React, {
     useCallback
 } from "react";
 import {Box, Flex} from "gestalt";
-import axios from "axios";
 import api from "../api";
 import {useRecoilValue} from "recoil";
 import {isLoginState} from "../atom";
@@ -20,7 +19,6 @@ import useSnackbar from "../hooks/useSnackbar";
 
 // 메인 컴포넌트
 export default function ImageGenerator() {
-    const apiKey = process.env.REACT_APP_KAKAO_REST_API_KEY;
 
     // 상태 변수
     const [loading, setLoading] = useState(false);
@@ -32,7 +30,7 @@ export default function ImageGenerator() {
     const [direction, setDirection] = useState('row');
     const [mainDirection, setMainDirection] = useState('row');
     const [customWidth, setCustomWidth] = useState(600);
-    const [seed, setSeed] = useState(-1);
+    const [seed, setSeed] = useState(undefined);
     const [imgQuality, setImgQuality] = useState(50);
     const [guidanceScale, setGuidanceScale] = useState(5);
     const [samples, setSamples] = useState(1);
@@ -81,32 +79,34 @@ export default function ImageGenerator() {
         setCurrentImg(0);
         setImageItem([]);
 
-        const settings = {
-            version: "v2.1",
-            prompt: searchValue,
-            negative_prompt: searchNegativeValue,
-            width: imageSize[0],
-            height: imageSize[1],
-            image_quality: imgQuality,
-            guidance_scale: guidanceScale,
-            samples: samples,
-            seed : Array.from({ length: samples }, () => Number(seed))
-        };
+        if(seed === '') {
+            setSeed(null)
+        }
+
+        if(searchValue === '' || searchValue === undefined || searchValue === null) {
+            showSnackbar('warning', 'Prompt를 입력해주세요.');
+            setLoading(false);
+            return;
+        }
 
         try {
-            const data = await axios.post(
-                "https://api.kakaobrain.com/v2/inference/karlo/t2i",
-                JSON.stringify(settings),
+            const data = await api.post(
+                "/api/images",
                 {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'KakaoAK ' + apiKey,
-                    },
+                    version: "v2.1",
+                    prompt: searchValue,
+                    negative_prompt: searchNegativeValue,
+                    width: imageSize[0],
+                    height: imageSize[1],
+                    num_inference_steps: imgQuality,
+                    guidance_scale: guidanceScale,
+                    samples: samples,
+                    seed : (Number(seed) < 0 || seed === undefined) ? null : Array.from({ length: samples }, () => Number(seed)),
                 });
 
-            console.log(data);
+            console.log(data.data);
 
-            setImageItem(data.data.images);
+            setImageItem(data.data);
             setLoading(false);
             setImgLoad(true);
 
@@ -116,6 +116,21 @@ export default function ImageGenerator() {
         } catch (e) {
             console.log(e);
             showSnackbar('error', '이미지 생성에 실패했습니다.');
+            setLoading(false);
+        }
+    };
+
+    const handleSeedChange = (event) => {
+        const value = event.target;
+
+        // 숫자만 있는지 확인하는 정규식
+        const isNumeric = /^[0-9]*$/.test(value);
+
+        if (isNumeric) {
+            setSeed(value);
+        } else {
+            // 숫자가 아닌 경우 Snackbar 표시
+            showSnackbar('warning', '숫자만 입력해주세요.');
         }
     };
 
@@ -189,7 +204,7 @@ export default function ImageGenerator() {
                         setImgQuality={setImgQuality}
                         setGuidanceScale={setGuidanceScale}
                         seed={seed}
-                        setSeed={setSeed}
+                        handleSeedChange={handleSeedChange}
                         samples={samples}
                         setSamples={setSamples}
                         openArray={openArray}

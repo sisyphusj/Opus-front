@@ -25,7 +25,7 @@ function App() {
     const boxProps = useMemo(() => ({
         fit: true,
         color: "default",
-        minWidth: 575
+        minWidth: "800px"
     }), []);
 
     return (

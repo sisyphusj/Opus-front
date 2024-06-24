@@ -1,73 +1,65 @@
-import {useEffect, useRef, useState} from 'react';
-import {Box, Masonry,} from 'gestalt';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { Box, Masonry } from 'gestalt';
 import GridComponent from '../component/GridComponent';
 import api from "../api";
-import {searchKeywordState} from "../atom";
-import {useRecoilValue} from "recoil";
+import { searchKeywordState } from "../atom";
+import { useRecoilValue } from "recoil";
 import useSnackbar from "../hooks/useSnackbar";
 
 export default function Feed() {
     const [pins, setPins] = useState([]);
-    const [total, setTotal] = useState(null);
+    const [total, setTotal] = useState(100); // 임의 설정한 총 핀 개수
+    const [hasMore, setHasMore] = useState(true); // 더 불러올 데이터가 있는지 여부
+    const [loading, setLoading] = useState(false); // 데이터 로딩 상태
     const scrollContainerRef = useRef();
     const keyword = useRecoilValue(searchKeywordState);
+    const { showSnackbar } = useSnackbar();
 
-    const {showSnackbar} = useSnackbar();
-
-    const getPins = async (n, keyword) => {
-
-        if (keyword === null) {
-            keyword = '';
-        }
-
+    // 핀 데이터를 가져오는 함수
+    const getPins = async (offset, keyword) => {
         try {
             const response = await api.get(
-                `/api/pins?offset=${n.from}&amount=4&keyword=${keyword}`)
-            console.log(response);
-            return Promise.resolve(response.data);
+                `/api/pins?offset=${offset}&amount=4&keyword=${keyword || ''}`
+            );
+
+            console.log(response.data);
+
+            return response.data;
         } catch (error) {
             console.error(error);
             showSnackbar('error', '핀을 불러오는데 실패했습니다.');
-        }
-
-    }
-
-    const getTotalCount = async (keyword) => {
-        try {
-            if (keyword === null) {
-                keyword = '';
-            }
-            const response = await api.get(
-                `/api/pins/total?keyword=${keyword}`);
-            console.log(response.data);
-            setTotal(response.data);
-        } catch (error) {
-            console.error(error);
+            return [];
         }
     };
 
+    // 초기 데이터 및 키워드 변경 시 데이터를 가져오는 함수
     useEffect(() => {
         const fetchData = async () => {
-            console.log("keyword 변경 : ", pins)
-            setPins([]);
-            await getTotalCount(keyword);
-            try {
-                const newPins = await getPins({from: 0}, keyword || '');
-                setPins(newPins);
-            } catch (error) {
-                console.error(error);
-            }
+            setPins([]); // 초기화
+            setHasMore(true); // 추가 로딩 가능성 리셋
+            const initialPins = await getPins(0, keyword);
+            setPins(initialPins);
         };
 
         fetchData();
     }, [keyword]);
 
+    // Masonry의 loadItems 함수를 통해 데이터를 추가로 불러오는 함수
+    const loadMoreItems = useCallback(async ({ from }) => {
+        if (hasMore && !loading) {
+            setLoading(true);
+            const newPins = await getPins(from, keyword);
+            setPins((prevPins) => [...prevPins, ...newPins]);
+            setHasMore(newPins.length === 4 && pins.length + newPins.length < total);
+            setLoading(false);
+        }
+    }, [hasMore, loading, keyword, pins.length, total]);
+
     return (
         <Box marginTop={10} minHeight={"calc(100vh - 162px)"}
-             overflow={"hidden"}
-             ref={scrollContainerRef}
-
-        >
+             overflow={"auto"} // 스크롤 가능하도록 설정
+             height={`calc(100vh - 162px)`} // 헤더 높이만큼 빼서 맞춤
+             ref={scrollContainerRef}>
             {scrollContainerRef.current && (
                 <Masonry
                     columnWidth={252}
@@ -75,17 +67,9 @@ export default function Feed() {
                     items={pins}
                     layout="flexible"
                     minCols={1}
-                    renderItem={({data}) => <GridComponent data={data}/>}
+                    renderItem={({ data }) => <GridComponent data={data} />}
                     scrollContainer={() => scrollContainerRef.current}
-                    loadItems={(n) => {
-                        if (n.from === total) {
-                            console.log("더 이상 로드할 데이터가 없습니다.");
-                            return Promise.resolve(0);
-                        }
-                        return getPins(n, keyword).then((newPins) => {
-                            setPins([...pins, ...newPins]);
-                        });
-                    }}
+                    loadItems={loadMoreItems} // 트리거 감지 및 데이터 로드 함수 적용
                 />
             )}
         </Box>

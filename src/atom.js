@@ -68,6 +68,11 @@ export const snackTypeState = atom({
     default: 'success',
 });
 
+export const isEditState = atom({
+    key: "isEditState",
+    default: false,
+});
+
 
 
 

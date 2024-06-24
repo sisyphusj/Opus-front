@@ -24,6 +24,7 @@ import {QueryClient} from "react-query";
 import {useRecoilValue} from "recoil";
 import {isLoginState} from "../../../atom";
 import LikeCounter from "./LikeCounter";
+import api from "../../../api";
 
 const PinDetails = React.memo(({
     direction,
@@ -40,7 +41,27 @@ const PinDetails = React.memo(({
     handleDeleteConfirm,
 }) => {
     const {likeCount} = useSSE(QueryClient);
+    const [defaultLikeCount, setDefaultLikeCount] = React.useState(0);
     const isLogin = useRecoilValue(isLoginState);
+
+    const getCountLike = async () => {
+        try {
+            const response = await api.get(
+                `/api/likes/pin/${pinData.pinId}`);
+            console.log(response);
+            setDefaultLikeCount(response.data);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    useEffect(() => {
+        if(!isLogin){
+           getCountLike();
+        }
+    }, []);
+
+
     return (
         <Flex width={"100%"} height={"100%"} direction={direction}>
             <Box width={"100%"} height={"100%"}>
@@ -58,7 +79,7 @@ const PinDetails = React.memo(({
                         <IconButton style={{marginBottom : "10px"}} onClick={() => handleLike()}>
                             {isLike ? <Favorite fontSize="medium" color="error"/> : <FavoriteBorder fontSize="medium" color="error"/> }
                         </IconButton>
-                        {isLogin && <LikeCounter likeCount={likeCount}/>}
+                        {isLogin ? <LikeCounter likeCount={likeCount}/> : <LikeCounter likeCount={defaultLikeCount}/>}
                         {isMyPin && (
                             <DeleteButton onClick={() => setIsDelete(
                                 true)}> delete </DeleteButton>

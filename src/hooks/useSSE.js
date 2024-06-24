@@ -6,13 +6,14 @@ import api from "../api";
 
 const useSSE = () => {
     const pinData = useRecoilValue(currentPinState);
-    const [likeCount, setLikeCount] = useState(0);
+    const [likeCount, setLikeCount] = useState(-1);
     const isLogin = useRecoilValue(isLoginState);
 
     /**
      * 좋아요 개수를 불러오는 함수
      */
     const getCountLike = async () => {
+
         try {
             const response = await api.get(`/api/likes/pin/${pinData.pinId}`);
             setLikeCount(response.data);

@@ -20,7 +20,8 @@ export const useComment = (comment) => {
     const [reply, setReply] = useState('');
     const [, setCommentList] = useRecoilState(commentListState);
     const pinData = useRecoilValue(currentPinState);
-    const [currentCommentId, setCurrentCommentId] = useRecoilState(currentReplyState);
+    const [currentCommentId, setCurrentCommentId] = useRecoilState(
+        currentReplyState);
     const [nickname, setNickname] = useState('');
     const [countLike, setCountLike] = useState(0);
 
@@ -31,7 +32,8 @@ export const useComment = (comment) => {
      */
     const getCommentData = useCallback(async () => {
         try {
-            const response = await api.get(`/api/pins/comments/list?pinId=${pinData.pinId}`);
+            const response = await api.get(
+                `/api/pins/comments/list?pinId=${pinData.pinId}`);
             setCommentList(response.data);
         } catch (e) {
             showSnackbar('error', '댓글을 불러오는 중 오류가 발생했습니다.');
@@ -50,7 +52,8 @@ export const useComment = (comment) => {
             setIsReplyOpen(true);
             setCurrentCommentId(comment.commentId);
         }
-    }, [isReplyOpen, comment.commentId, currentCommentId, setIsReplyOpen, setCurrentCommentId]);
+    }, [isReplyOpen, comment.commentId, currentCommentId, setIsReplyOpen,
+        setCurrentCommentId]);
 
     /**
      * 댓글 수정 버튼을 눌렀을 때 실행되는 함수
@@ -77,7 +80,8 @@ export const useComment = (comment) => {
         try {
             await api.post('/api/pins/comments', {
                 pinId: comment.pinId,
-                topLevelCommentId: comment.level === 0 ? comment.commentId : comment.topLevelCommentId,
+                topLevelCommentId: comment.level === 0 ? comment.commentId
+                    : comment.topLevelCommentId,
                 content: reply,
                 level: 1,
                 parentNickname: comment.nickname,
@@ -95,7 +99,9 @@ export const useComment = (comment) => {
             console.error(e);
             showSnackbar('error', '댓글을 작성하는 중 오류가 발생했습니다.');
         }
-    }, [isLogin, reply, comment.pinId, comment.level, comment.commentId, comment.nickname, getCommentData, setIsReplyOpen, setCurrentCommentId, showSnackbar]);
+    }, [isLogin, reply, comment.pinId, comment.level, comment.commentId,
+        comment.nickname, getCommentData, setIsReplyOpen, setCurrentCommentId,
+        showSnackbar]);
 
     /**
      * 댓글을 수정하는 함수
@@ -124,7 +130,8 @@ export const useComment = (comment) => {
             console.log(e);
             showSnackbar('error', '댓글을 수정하는 중 오류가 발생했습니다.');
         }
-    }, [reply, comment.commentId, comment.pinId, comment.level, getCommentData, setIsReplyOpen, setCurrentCommentId, showSnackbar]);
+    }, [reply, comment.commentId, comment.pinId, comment.level, getCommentData,
+        setIsReplyOpen, setCurrentCommentId, showSnackbar]);
 
     /**
      * 댓글을 삭제하는 함수
@@ -138,7 +145,7 @@ export const useComment = (comment) => {
             setCurrentCommentId(null);
         } catch (e) {
             // console.log(e);
-            if(e.response.status === 500) {
+            if (e.response.status === 500) {
                 showSnackbar('warning', e.response.data.reason);
                 return;
             }
@@ -164,6 +171,11 @@ export const useComment = (comment) => {
      */
     const handleLike = useCallback(async () => {
 
+        if (!isLogin) {
+            showSnackbar('warning', '로그인이 필요합니다.');
+            return;
+        }
+
         if (isLike) {
             try {
                 const response = await api.delete(
@@ -181,11 +193,8 @@ export const useComment = (comment) => {
 
                 response.status === 200 && setIsLike(true);
             } catch (e) {
-                if(e.response.status === 401) {
-                    showSnackbar('warning', '로그인이 필요합니다.');
-                } else{
-                    showSnackbar('error', '좋아요 추가에 실패했습니다.');
-                }
+                console.error(e);
+                showSnackbar('error', '좋아요 추가에 실패했습니다.');
             }
         }
         await getCountLike();
@@ -212,7 +221,7 @@ export const useComment = (comment) => {
         try {
             const response = await api.get(
                 `/api/likes/comment/${comment.commentId}`);
-            
+
             setCountLike(response.data);
         } catch (e) {
             console.error(e);

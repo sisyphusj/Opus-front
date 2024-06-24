@@ -82,6 +82,11 @@ const usePinData = () => {
      */
     const handleLike = useCallback(async () => {
 
+        if(!isLogin){
+            showSnackbar('warning', '로그인이 필요합니다.');
+            return;
+        }
+
         if (isLike) {
             try {
                 const response = await api.delete(
@@ -109,7 +114,7 @@ const usePinData = () => {
     /**
      * 좋아요 중인지 체크하는 함수
      */
-    const checkFavorite = async () => {
+    const checkLike = async () => {
         try {
             const response = await api.get(
                 `/api/likes/check/pin/${pinData.pinId}`);
@@ -152,7 +157,7 @@ const usePinData = () => {
     useEffect(() => {
         if (isLogin && getCookieToken()) {
             getNickname();
-            checkFavorite();
+            checkLike();
         }
     }, [isLogin, getNickname]);
 

@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { Box, Masonry } from 'gestalt';
+import {useEffect, useRef, useState, useCallback} from 'react';
+import {Masonry} from 'gestalt';
 import GridComponent from '../component/GridComponent';
 import api from "../api";
-import { searchKeywordState } from "../atom";
-import { useRecoilValue } from "recoil";
+import {searchKeywordState} from "../atom";
+import {useRecoilValue} from "recoil";
 import useSnackbar from "../hooks/useSnackbar";
+import {Box} from "@mui/material";
 
 export default function Feed() {
     const [pins, setPins] = useState([]);
@@ -13,7 +14,7 @@ export default function Feed() {
     const [loading, setLoading] = useState(false); // 데이터 로딩 상태
     const scrollContainerRef = useRef();
     const keyword = useRecoilValue(searchKeywordState);
-    const { showSnackbar } = useSnackbar();
+    const {showSnackbar} = useSnackbar();
 
     // 핀 데이터를 가져오는 함수
     const getPins = async (offset, keyword) => {
@@ -45,20 +46,23 @@ export default function Feed() {
     }, [keyword]);
 
     // Masonry의 loadItems 함수를 통해 데이터를 추가로 불러오는 함수
-    const loadMoreItems = useCallback(async ({ from }) => {
+    const loadMoreItems = useCallback(async ({from}) => {
         if (hasMore && !loading) {
             setLoading(true);
             const newPins = await getPins(from, keyword);
             setPins((prevPins) => [...prevPins, ...newPins]);
-            setHasMore(newPins.length === 4 && pins.length + newPins.length < total);
+            setHasMore(
+                newPins.length === 4 && pins.length + newPins.length < total);
             setLoading(false);
         }
     }, [hasMore, loading, keyword, pins.length, total]);
 
     return (
-        <Box marginTop={10} minHeight={"calc(100vh - 162px)"}
-             overflow={"auto"} // 스크롤 가능하도록 설정
+        <Box marginTop={"10px"} minHeight={"calc(100vh - 162px)"}
              height={`calc(100vh - 162px)`} // 헤더 높이만큼 빼서 맞춤
+             style={{
+                 overflowX: "hidden", overflowY: "auto",
+             }}
              ref={scrollContainerRef}>
             {scrollContainerRef.current && (
                 <Masonry
@@ -67,7 +71,7 @@ export default function Feed() {
                     items={pins}
                     layout="flexible"
                     minCols={1}
-                    renderItem={({ data }) => <GridComponent data={data} />}
+                    renderItem={({data}) => <GridComponent data={data}/>}
                     scrollContainer={() => scrollContainerRef.current}
                     loadItems={loadMoreItems} // 트리거 감지 및 데이터 로드 함수 적용
                 />

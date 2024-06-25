@@ -48,7 +48,6 @@ const PinDetails = React.memo(({
         try {
             const response = await api.get(
                 `/api/likes/pin/${pinData.pinId}`);
-            console.log(response);
             setDefaultLikeCount(response.data);
         } catch (e) {
             console.error(e);

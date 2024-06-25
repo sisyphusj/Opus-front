@@ -43,6 +43,11 @@ const usePinData = () => {
             return;
         }
 
+        if(!isLogin){
+            showSnackbar('warning', '로그인이 필요합니다.');
+            return;
+        }
+
         try {
             await api.post('/api/pins/comments', {
                 pinId: pinData.pinId,
@@ -141,11 +146,11 @@ const usePinData = () => {
 
     const broadcastLike = async () => {
         try {
-            const response = await api.post(
+            await api.post(
                 `/api/like-subscribe/broadcast`, {
                     pinId: pinData.pinId
                 });
-            console.log(response);
+
         } catch (e) {
             console.error(e);
         }

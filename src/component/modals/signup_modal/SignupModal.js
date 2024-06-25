@@ -17,11 +17,9 @@ const SignupModal = () => {
 
   useEffect(() => {
     handleModal(true);
-    console.log(isOpen);
 
     return () => {
       handleModal(false);
-      console.log(isOpen);
     }
   }, [handleModal, isOpen]);
 

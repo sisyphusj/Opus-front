@@ -23,8 +23,6 @@ export default function Feed() {
                 `/api/pins?offset=${offset}&amount=4&keyword=${keyword || ''}`
             );
 
-            console.log(response.data);
-
             return response.data;
         } catch (error) {
             console.error(error);

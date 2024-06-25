@@ -63,7 +63,6 @@ export default function ImageGenerator() {
                 negativePrompt: searchNegativeValue,
             });
 
-            console.log(data);
             showSnackbar('success', '이미지가 저장되었습니다.');
 
         } catch (e) {

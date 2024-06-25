@@ -46,24 +46,6 @@ const useSSE = () => {
                 }
             );
 
-            eventSource.onmessage = (event) => {
-                try {
-                    if (event.data === "ping") {
-                        console.log('Ping message received:', event.data);
-                    } else {
-                        const data = JSON.parse(event.data);
-                        if (data.likeCount !== undefined) {
-                            setLikeCount(data.likeCount);
-                        } else {
-                            console.log('Received non-likeCount message:', data);
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error parsing SSE message:', error);
-                    console.error('Failed message data:', event.data);
-                }
-            };
-
             eventSource.addEventListener('like-update', (event) => {
                 try {
                     const data = JSON.parse(event.data);

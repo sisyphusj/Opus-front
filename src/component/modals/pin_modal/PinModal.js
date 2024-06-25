@@ -53,7 +53,7 @@ export default function PinModal() {
     const deletePin = useCallback(async () => {
         try {
             const response = await api.delete(`/api/pins/${pinData.pinId}`);
-            console.log(response);
+            // console.log(response);
             setIsOpen(false);
             showSnackbar('success', '핀이 삭제되었습니다.');
 

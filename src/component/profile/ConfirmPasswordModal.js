@@ -33,7 +33,7 @@ const ConfirmPasswordModal = ({ message, setIsCorrect, onCancel, handleFieldBord
                 password : password
             });
 
-            console.log(response);
+            // console.log(response);
 
             if(response.status === 200) {
                 if(response.data === false) {

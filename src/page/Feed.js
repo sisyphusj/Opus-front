@@ -48,9 +48,15 @@ export default function Feed() {
         if (hasMore && !loading) {
             setLoading(true);
             const newPins = await getPins(from, keyword);
-            setPins((prevPins) => [...prevPins, ...newPins]);
+            setPins((prevPins) => {
+                const newUniquePins = newPins.filter(
+                    newPin => !prevPins.some(pin => pin.id === newPin.id)
+                );
+                return [...prevPins, ...newUniquePins];
+            });
             setHasMore(
-                newPins.length === 4 && pins.length + newPins.length < total);
+                newPins.length === 4 && pins.length + newPins.length < total
+            );
             setLoading(false);
         }
     }, [hasMore, loading, keyword, pins.length, total]);

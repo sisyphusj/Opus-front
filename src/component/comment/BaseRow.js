@@ -18,6 +18,7 @@ import { currentPinState, isDarkModeState, isLoginState, pinModalOpenState } fro
 import api from '../../api';
 import useSnackbar from '../../hooks/useSnackbar';
 import { useNavigate } from 'react-router-dom';
+import {formatDate} from "../../utils/dateUtils";
 
 const BaseRow = ({ data }) => {
     const [open, setOpen] = useState(false);
@@ -89,7 +90,7 @@ const BaseRow = ({ data }) => {
                                textOverflow: 'ellipsis',
                                color: isDarkMode ? '#fff' : '#000'
                            }}>{data.content}</TableCell>
-                <TableCell sx={{ color: isDarkMode ? '#fff' : '#000' }} align="left">{data.updatedDate}</TableCell>
+                <TableCell sx={{ color: isDarkMode ? '#fff' : '#000' }} align="left">{formatDate(data.createdDate, data.updatedDate)}</TableCell>
             </TableRow>
 
             <TableRow>

@@ -1,4 +1,4 @@
-import React, {useMemo} from "react";
+import React, {useEffect, useMemo} from "react";
 import {BrowserRouter} from "react-router-dom";
 import Header from "./component/header/Header";
 import {Box, ColorSchemeProvider} from "gestalt";
@@ -7,6 +7,7 @@ import CustomSnackbar from "./component/CustomSnackbar";
 import AppRoutes from "./routes/AppRoutes";
 import GlobalStyle from "./styles/GlobalStyle";
 import useAppState from "./hooks/useAppState";
+import {redirectIfMobile} from "./utils/detectMobile";
 
 function App() {
 
@@ -27,6 +28,10 @@ function App() {
         color: "default",
         minWidth: "800px"
     }), []);
+
+    useEffect(() => {
+        redirectIfMobile();
+    }, []);
 
     return (
         // BrowserRouter 로 감싸주어 라우팅을 사용할 수 있도록 함

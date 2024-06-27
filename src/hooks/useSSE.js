@@ -38,7 +38,7 @@ const useSSE = () => {
             }
 
             eventSource = new EventSourcePolyfill(
-                `http://localhost:8080/api/like-subscribe/subscribe/${pinData.pinId}`,
+                `https://api.sisyphusj.me/api/like-subscribe/subscribe/${pinData.pinId}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,

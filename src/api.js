@@ -3,11 +3,11 @@ import {getCookieToken, setRefreshToken} from "./Cookies";
 
 // Axios 인스턴스 생성
 export const api = axios.create({
-    baseURL: "http://localhost:8080",
+    baseURL: "https://api.sisyphusj.me",
 });
 
 const refreshInstance = axios.create({
-    baseURL: "http://localhost:8080",
+    baseURL: "https://api.sisyphusj.me",
     headers: {
         "Content-Type": "application/json"
     }

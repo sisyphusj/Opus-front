@@ -23,7 +23,7 @@ const useLogin = () => {
         }
 
         try {
-            const response = await axios.post('http://localhost:8080/api/auth/login', {
+            const response = await axios.post('https://api.sisyphusj.me/api/auth/login', {
                 username: id,
                 password: password,
             });

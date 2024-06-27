@@ -48,7 +48,7 @@ const useSignup = () => {
         }
 
         try {
-            const response = await axios.post('http://localhost:8080/api/member/register', {
+            const response = await axios.post('https://api.sisyphusj.me/api/member/register', {
                 username: id,
                 password: password,
                 nickname: nickname,

@@ -73,6 +73,11 @@ export const isEditState = atom({
     default: false,
 });
 
+export const isPasswordCorrectState = atom({
+    key: "isPasswordCorrectState",
+    default: false,
+});
+
 
 
 

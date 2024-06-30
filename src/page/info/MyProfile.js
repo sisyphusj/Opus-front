@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState, useCallback} from "react";
 import {Box, Flex, Heading} from "gestalt";
 import api from "../../api";
 import {useRecoilState} from "recoil";
-import {isEditState, isLoginState} from "../../atom";
+import {isEditState, isLoginState, isPasswordCorrectState} from "../../atom";
 import {useNavigate} from "react-router-dom";
 import {removeCookieToken} from "../../Cookies";
 import ProfileFields from "../../component/profile/ProfileFields";
@@ -33,7 +33,7 @@ export default function MyProfile() {
 
     const {showSnackbar} = useSnackbar();
     const [isEdit, setIsEdit] = useRecoilState(isEditState);
-    const [isCorrect, setIsCorrect] = useState(false);
+    const [isCorrect, setIsCorrect] = useRecoilState(isPasswordCorrectState);
 
     // 프로필 불러오기
     const getProfile = async () => {
@@ -142,6 +142,13 @@ export default function MyProfile() {
 
         getProfile();
     }, [isLogin, navigate, showSnackbar]);
+
+    useEffect(() => {
+        return () => {
+            setIsEdit(false);
+            setIsCorrect(false);
+        }
+    } ,[]);
 
     return (
         <Box minHeight={"calc(100vh - 154px)"}>

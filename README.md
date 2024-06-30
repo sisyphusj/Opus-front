@@ -51,7 +51,7 @@
 
 ### 댓글 추가, 수정, 삭제, 좋아요
 
-![ezgif com-video-to-gif-converter (6)](https://github.com/sisyphusj/Opus-server/assets/83945228/ace9628f-2d02-4668-a140-c1f92c238b55)
+![ezgif com-video-to-gif-converter (9)](https://github.com/sisyphusj/Opus-front/assets/83945228/5816b780-1354-4a74-8dc8-84d87db9266f)
 
 <br>
 
